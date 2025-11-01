@@ -3,8 +3,11 @@ import { useAuth } from './AuthContext';
 
 interface PaymentContextType {
   isPaid: boolean;
+  hasUsedFreeDownload: boolean;
+  canDownload: boolean;
   checkPaymentStatus: () => void;
   redirectToPayment: () => void;
+  markFreeDownloadUsed: () => void;
 }
 
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
@@ -20,16 +23,22 @@ export const usePayment = () => {
 export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [isPaid, setIsPaid] = useState(false);
+  const [hasUsedFreeDownload, setHasUsedFreeDownload] = useState(false);
 
   const checkPaymentStatus = () => {
     if (!currentUser) {
       setIsPaid(false);
+      setHasUsedFreeDownload(false);
       return;
     }
     
-    // Check localStorage for payment status (simple implementation)
+    // Check localStorage for payment status
     const paymentStatus = localStorage.getItem(`payment_${currentUser.uid}`);
     setIsPaid(paymentStatus === 'paid');
+    
+    // Check if user has used their free download
+    const freeDownloadUsed = localStorage.getItem(`free_download_${currentUser.uid}`);
+    setHasUsedFreeDownload(freeDownloadUsed === 'used');
   };
 
   const redirectToPayment = () => {
@@ -60,10 +69,22 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     handlePaymentSuccess();
   }, [currentUser]);
 
+  const markFreeDownloadUsed = () => {
+    if (currentUser) {
+      localStorage.setItem(`free_download_${currentUser.uid}`, 'used');
+      setHasUsedFreeDownload(true);
+    }
+  };
+
+  const canDownload = isPaid || !hasUsedFreeDownload;
+
   const value = {
     isPaid,
+    hasUsedFreeDownload,
+    canDownload,
     checkPaymentStatus,
     redirectToPayment,
+    markFreeDownloadUsed,
   };
 
   return <PaymentContext.Provider value={value}>{children}</PaymentContext.Provider>;

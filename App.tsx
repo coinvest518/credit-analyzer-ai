@@ -15,7 +15,7 @@ import type { UploadedFile, AnalysisResult, ProcessingTask, LetterPackage, Track
 
 const App: React.FC = () => {
   const { currentUser } = useAuth();
-  const { isPaid } = usePayment();
+  const { isPaid, canDownload, markFreeDownloadUsed } = usePayment();
   const [activeStep, setActiveStep] = useState(1);
   const [completedStep, setCompletedStep] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -44,10 +44,6 @@ const App: React.FC = () => {
   const activeStepData = workflowSteps.find(step => step.id === activeStep);
 
   const handleStepClick = (stepId: number) => {
-    if (stepId > 2 && !currentUser) {
-      setShowAuthModal(true);
-      return;
-    }
     setActiveStep(stepId);
   };
   
@@ -64,13 +60,24 @@ const App: React.FC = () => {
     }
   };
 
+  const handleDownloadAttempt = () => {
+    if (!currentUser) {
+      setShowAuthModal(true);
+      return false;
+    }
+    if (!canDownload) {
+      setShowPaymentModal(true);
+      return false;
+    }
+    if (!isPaid) {
+      markFreeDownloadUsed();
+    }
+    return true;
+  };
+
   const handleNext = () => {
     if (activeStep < workflowSteps.length) {
       if (isStepActionComplete(activeStep)) {
-        if (activeStep === 2 && !currentUser) {
-          setShowAuthModal(true);
-          return;
-        }
         setCompletedStep(Math.max(completedStep, activeStep));
         setActiveStep(activeStep + 1);
       }
@@ -128,14 +135,6 @@ const App: React.FC = () => {
   };
 
   const handleAnalyze = async () => {
-    if (!currentUser) {
-      setShowAuthModal(true);
-      return;
-    }
-    if (!isPaid) {
-      setShowPaymentModal(true);
-      return;
-    }
     if (!uploadedFile) {
         setError("Please upload a document first.");
         return;
@@ -313,6 +312,8 @@ const App: React.FC = () => {
                   // Step 5 props
                   trackingInfo={trackingInfo}
                   handleSetupTracking={handleSetupTracking}
+                  // Download protection
+                  handleDownloadAttempt={handleDownloadAttempt}
                 />
               )}
             </div>
