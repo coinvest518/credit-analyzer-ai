@@ -22,3 +22,11 @@ const app = initializeApp(firebaseConfig);
 // Export auth and provider instances
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+
+// Optional: Add additional scopes if needed
+// googleProvider.addScope('https://www.googleapis.com/auth/contacts.readonly');
+
+// Optional: Set custom parameters
+// googleProvider.setCustomParameters({
+//   'login_hint': 'user@example.com'
+// });
