@@ -6,6 +6,7 @@ import { WorkflowStepper } from './components/WorkflowStepper';
 import { StepDetail } from './components/StepDetail';
 import { AuthModal } from './components/AuthModal';
 import { PaymentModal } from './components/PaymentModal';
+import { Footer } from './components/Footer';
 import { useAuth } from './contexts/AuthContext';
 import { usePayment } from './contexts/PaymentContext';
 import { workflowSteps } from './constants';
@@ -321,6 +322,7 @@ const App: React.FC = () => {
           isOpen={showPaymentModal} 
           onClose={() => setShowPaymentModal(false)} 
         />
+        <Footer />
       </div>
     </>
   );

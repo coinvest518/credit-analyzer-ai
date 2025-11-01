@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { usePayment } from '../contexts/PaymentContext';
 import { LogoIcon } from './icons/Icons';
 
@@ -8,14 +8,21 @@ interface PaymentModalProps {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) => {
-  const { redirectToPayment } = usePayment();
+  useEffect(() => {
+    if (isOpen) {
+      // Load Stripe buy button script when modal opens
+      const script = document.createElement('script');
+      script.src = 'https://js.stripe.com/v3/buy-button.js';
+      script.async = true;
+      document.head.appendChild(script);
+      
+      return () => {
+        document.head.removeChild(script);
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
-
-  const handleUpgrade = () => {
-    redirectToPayment();
-    onClose();
-  };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -38,12 +45,12 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose }) =
             </ul>
           </div>
 
-          <button
-            onClick={handleUpgrade}
-            className="w-full px-6 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-semibold rounded-lg hover:from-cyan-500 hover:to-blue-500 transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center justify-center text-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40 mb-4"
-          >
-            Upgrade Now
-          </button>
+          <div className="w-full mb-4">
+            <stripe-buy-button
+              buy-button-id={import.meta.env.VITE_STRIPE_BUY_BUTTON_ID}
+              publishable-key={import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY}
+            />
+          </div>
           
           <button
             onClick={onClose}
