@@ -16,38 +16,40 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick })
   return (
     <header className="bg-gray-900/80 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-10">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center space-x-3">
-          <LogoIcon className="w-8 h-8 text-cyan-400" />
-          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
-            AI Credit Repair Agent
+        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+          <LogoIcon className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400 flex-shrink-0" />
+          <h1 className="text-sm sm:text-xl md:text-2xl font-bold text-white tracking-tight truncate">
+            <span className="hidden sm:inline">AI Credit Repair Agent</span>
+            <span className="sm:hidden">AI Credit</span>
           </h1>
         </div>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
           <button
             onClick={onUpgradeClick}
-            className="px-3 py-1 text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded transition-colors"
+            className="px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded transition-colors"
           >
             {currentUser && isPaid ? 'Premium' : 'Upgrade'}
           </button>
           {currentUser ? (
             <>
-              <div className="flex items-center space-x-2">
+              <div className="hidden sm:flex items-center space-x-2">
                 {currentUser.photoURL && (
-                  <img src={currentUser.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                  <img src={currentUser.photoURL} alt="Profile" className="w-6 h-6 sm:w-8 sm:h-8 rounded-full" />
                 )}
-                <span className="text-gray-300 text-sm">{currentUser.displayName || currentUser.email}</span>
+                <span className="text-gray-300 text-sm max-w-24 truncate">{currentUser.displayName || currentUser.email}</span>
               </div>
               <button
                 onClick={signOutUser}
-                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+                className="px-2 py-1 sm:px-3 sm:py-1 text-xs sm:text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
               >
-                Sign Out
+                <span className="hidden sm:inline">Sign Out</span>
+                <span className="sm:hidden">Out</span>
               </button>
             </>
           ) : (
             <button
               onClick={onSignInClick}
-              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
+              className="px-3 py-2 sm:px-4 sm:py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-xs sm:text-sm font-medium rounded-lg transition-colors"
             >
               Sign In
             </button>

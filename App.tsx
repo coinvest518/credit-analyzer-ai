@@ -282,15 +282,15 @@ const App: React.FC = () => {
           onSignInClick={() => setShowAuthModal(true)}
           onUpgradeClick={() => setShowPaymentModal(true)}
         />
-        <main className="container mx-auto px-4 py-8 md:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
+        <main className="container mx-auto px-4 py-4 sm:py-8 md:py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 md:gap-12">
             <div className="lg:col-span-1">
-              <h2 className="text-2xl font-bold text-cyan-400 mb-4">Agent Workflow</h2>
-              <p className="text-gray-400 mb-6">Follow the AI agent's automated process to analyze documents and generate disputes.</p>
+              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 mb-3 sm:mb-4">Agent Workflow</h2>
+              <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">Follow the AI agent's automated process to analyze documents and generate disputes.</p>
               <WorkflowStepper steps={workflowSteps} activeStep={activeStep} completedStep={completedStep} onStepClick={handleStepClick} />
             </div>
             <div className="lg:col-span-2">
-              {error && (<div className="bg-red-900/50 border border-red-700 text-red-300 px-4 py-3 rounded-lg mb-6" role="alert"><strong className="font-bold">Error: </strong><span className="block sm:inline">{error}</span></div>)}
+              {error && (<div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 sm:px-4 sm:py-3 rounded-lg mb-4 sm:mb-6 text-sm sm:text-base" role="alert"><strong className="font-bold">Error: </strong><span className="block sm:inline">{error}</span></div>)}
               {activeStepData && (
                 <StepDetail 
                   step={activeStepData} onNext={handleNext} onPrev={handlePrev} isFirst={activeStep === 1} isLast={activeStep === workflowSteps.length} isStepActionComplete={isStepActionComplete(activeStep)}

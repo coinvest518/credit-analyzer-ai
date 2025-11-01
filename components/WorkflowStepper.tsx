@@ -11,7 +11,7 @@ interface WorkflowStepperProps {
 export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({ steps, activeStep, completedStep, onStepClick }) => {
   return (
     <nav aria-label="Progress">
-      <ol className="relative ml-4">
+      <ol className="relative ml-2 sm:ml-4">
         {steps.map((step, index) => {
           const isCompleted = step.id <= completedStep;
           const isActive = step.id === activeStep;
@@ -26,19 +26,19 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({ steps, activeS
           const descriptionClass = isActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-gray-400';
 
           return (
-            <li key={step.id} className="mb-8 relative">
+            <li key={step.id} className="mb-6 sm:mb-8 relative">
               {index !== steps.length - 1 && (
-                <div className={`absolute left-[1.125rem] top-12 -bottom-8 w-0.5 ${isCompleted ? 'bg-green-500' : 'bg-gray-700'}`}></div>
+                <div className={`absolute left-[1rem] sm:left-[1.125rem] top-10 sm:top-12 -bottom-6 sm:-bottom-8 w-0.5 ${isCompleted ? 'bg-green-500' : 'bg-gray-700'}`}></div>
               )}
-              <div className="flex items-start space-x-5 cursor-pointer group" onClick={() => onStepClick(step.id)}>
+              <div className="flex items-start space-x-3 sm:space-x-5 cursor-pointer group p-2 -m-2 rounded-lg hover:bg-gray-800/50 transition-colors" onClick={() => onStepClick(step.id)}>
                 <div className="flex-shrink-0 relative">
-                  <div className={`relative z-10 w-10 h-10 rounded-full flex items-center justify-center ring-4 transition-all duration-300 ${circleClass}`}>
-                    <step.icon className="w-5 h-5 text-white" />
+                  <div className={`relative z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center ring-2 sm:ring-4 transition-all duration-300 ${circleClass}`}>
+                    <step.icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                   </div>
                 </div>
-                <div className="pt-1.5">
-                  <h3 className={`text-lg transition-colors duration-300 ${textClass}`}>{step.title}</h3>
-                  <p className={`text-sm mt-0.5 transition-colors duration-300 ${descriptionClass}`}>{step.description}</p>
+                <div className="pt-1 sm:pt-1.5 min-w-0 flex-1">
+                  <h3 className={`text-base sm:text-lg transition-colors duration-300 ${textClass}`}>{step.title}</h3>
+                  <p className={`text-xs sm:text-sm mt-0.5 transition-colors duration-300 ${descriptionClass} line-clamp-2`}>{step.description}</p>
                 </div>
               </div>
             </li>
