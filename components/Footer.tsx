@@ -36,11 +36,8 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900/95 backdrop-blur-sm border-t border-gray-700/50 mt-16">
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center">
-          {React.createElement('stripe-buy-button', {
-            'buy-button-id': import.meta.env.VITE_STRIPE_BUY_BUTTON_ID,
-            'publishable-key': import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
-          })}
+        <div className="text-center text-gray-400">
+          <p>&copy; 2024 AI Credit Repair Agent. All rights reserved.</p>
         </div>
       </div>
     </footer>

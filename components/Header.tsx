@@ -6,9 +6,10 @@ import { usePayment } from '../contexts/PaymentContext';
 
 interface HeaderProps {
   onSignInClick?: () => void;
+  onUpgradeClick?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onSignInClick }) => {
+export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick }) => {
   const { currentUser, signOutUser } = useAuth();
   const { isPaid } = usePayment();
 
@@ -21,34 +22,37 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick }) => {
             AI Credit Repair Agent
           </h1>
         </div>
-        {currentUser ? (
-          <div className="flex items-center space-x-4">
-            {isPaid && (
-              <span className="px-2 py-1 bg-green-600 text-white text-xs font-medium rounded-full">
-                Premium
-              </span>
-            )}
-            <div className="flex items-center space-x-2">
-              {currentUser.photoURL && (
-                <img src={currentUser.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
-              )}
-              <span className="text-gray-300 text-sm">{currentUser.displayName || currentUser.email}</span>
-            </div>
-            <button
-              onClick={signOutUser}
-              className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
-            >
-              Sign Out
-            </button>
-          </div>
-        ) : (
+        <div className="flex items-center space-x-4">
           <button
-            onClick={onSignInClick}
-            className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
+            onClick={onUpgradeClick}
+            className="px-3 py-1 text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded transition-colors"
           >
-            Sign In
+            {currentUser && isPaid ? 'Premium' : 'Upgrade'}
           </button>
-        )}
+          {currentUser ? (
+            <>
+              <div className="flex items-center space-x-2">
+                {currentUser.photoURL && (
+                  <img src={currentUser.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                )}
+                <span className="text-gray-300 text-sm">{currentUser.displayName || currentUser.email}</span>
+              </div>
+              <button
+                onClick={signOutUser}
+                className="px-3 py-1 text-sm bg-gray-700 hover:bg-gray-600 text-gray-300 rounded transition-colors"
+              >
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={onSignInClick}
+              className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );
