@@ -4,8 +4,12 @@ import { LogoIcon } from './icons/Icons';
 import { useAuth } from '../contexts/AuthContext';
 import { usePayment } from '../contexts/PaymentContext';
 
-export const Header: React.FC = () => {
-  const { currentUser, signOutUser, signInWithGoogle } = useAuth();
+interface HeaderProps {
+  onSignInClick?: () => void;
+}
+
+export const Header: React.FC<HeaderProps> = ({ onSignInClick }) => {
+  const { currentUser, signOutUser } = useAuth();
   const { isPaid } = usePayment();
 
   return (
@@ -39,7 +43,7 @@ export const Header: React.FC = () => {
           </div>
         ) : (
           <button
-            onClick={signInWithGoogle}
+            onClick={onSignInClick}
             className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white text-sm font-medium rounded-lg transition-colors"
           >
             Sign In

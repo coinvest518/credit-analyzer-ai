@@ -279,7 +279,7 @@ const App: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
-        <Header />
+        <Header onSignInClick={() => setShowAuthModal(true)} />
         <main className="container mx-auto px-4 py-8 md:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-12">
             <div className="lg:col-span-1">

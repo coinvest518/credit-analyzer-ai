@@ -6,7 +6,9 @@ import {
     signOut, 
     updateProfile, 
     sendPasswordResetEmail, 
-    deleteUser, 
+    deleteUser,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
     type User 
 } from "firebase/auth";
 import { auth, googleProvider } from '../firebase';
@@ -15,6 +17,8 @@ interface AuthContextType {
     currentUser: User | null;
     loading: boolean;
     signInWithGoogle: () => Promise<void>;
+    signInWithEmail: (email: string, password: string) => Promise<void>;
+    signUpWithEmail: (email: string, password: string) => Promise<void>;
     signOutUser: () => Promise<void>;
     updateUserProfile: (displayName: string) => Promise<void>;
     sendPasswordReset: () => Promise<void>;
@@ -63,6 +67,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             } else {
                 alert(`Sign-in failed: ${errorMessage}`);
             }
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const signInWithEmail = async (email: string, password: string) => {
+        try {
+            setAuthLoading(true);
+            await signInWithEmailAndPassword(auth, email, password);
+        } catch (error: any) {
+            console.error("Error signing in with email: ", error);
+            throw error;
+        } finally {
+            setAuthLoading(false);
+        }
+    };
+
+    const signUpWithEmail = async (email: string, password: string) => {
+        try {
+            setAuthLoading(true);
+            await createUserWithEmailAndPassword(auth, email, password);
+        } catch (error: any) {
+            console.error("Error signing up with email: ", error);
+            throw error;
         } finally {
             setAuthLoading(false);
         }
@@ -129,6 +157,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         currentUser,
         loading: authLoading,
         signInWithGoogle,
+        signInWithEmail,
+        signUpWithEmail,
         signOutUser,
         updateUserProfile,
         sendPasswordReset,
