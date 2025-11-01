@@ -34,12 +34,23 @@ export const useAuth = () => {
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [authLoading, setAuthLoading] = useState(false);
 
     const signInWithGoogle = async () => {
         try {
+            setAuthLoading(true);
             await signInWithPopup(auth, googleProvider);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error signing in with Google: ", error);
+            if (error.code === 'auth/popup-blocked') {
+                alert('Popup was blocked. Please allow popups for this site and try again.');
+            } else if (error.code === 'auth/cancelled-popup-request') {
+                // User cancelled, no need to show error
+            } else {
+                alert(`Sign-in failed: ${error.message}`);
+            }
+        } finally {
+            setAuthLoading(false);
         }
     };
 
@@ -102,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const value = {
         currentUser,
-        loading,
+        loading: authLoading,
         signInWithGoogle,
         signOutUser,
         updateUserProfile,

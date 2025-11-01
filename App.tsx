@@ -7,6 +7,7 @@ import { StepDetail } from './components/StepDetail';
 import { AuthModal } from './components/AuthModal';
 import { PaymentModal } from './components/PaymentModal';
 import { Footer } from './components/Footer';
+import { EnvCheck } from './components/EnvCheck';
 import { useAuth } from './contexts/AuthContext';
 import { usePayment } from './contexts/PaymentContext';
 import { workflowSteps } from './constants';
@@ -323,6 +324,7 @@ const App: React.FC = () => {
           onClose={() => setShowPaymentModal(false)} 
         />
         <Footer />
+        <EnvCheck />
       </div>
     </>
   );
