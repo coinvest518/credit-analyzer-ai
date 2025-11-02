@@ -1,5 +1,5 @@
 {
-  "name": "AI Credit Repair Agent Flow",
-  "description": "A web application that visualizes the step-by-step process of an AI-powered agent for credit repair, from document intake to dispute resolution and monitoring.",
+  "name": "AI Credit Report Analyzer",
+  "description": "A web application that visualizes the step-by-step process of an AI-powered agent for credit report analysis, from document intake to dispute resolution and monitoring.",
   "requestFramePermissions": []
 }

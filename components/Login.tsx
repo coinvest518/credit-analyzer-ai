@@ -11,7 +11,7 @@ export const LoginScreen: React.FC = () => {
             <div className="text-center max-w-lg w-full bg-gray-800/50 border border-gray-700 rounded-xl p-8 shadow-2xl shadow-gray-900/50">
                 <LogoIcon className="w-16 h-16 text-cyan-400 mx-auto mb-4" />
                 <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
-                    AI Credit Repair Agent
+                    AI Credit Report Analyzer
                 </h1>
                 <p className="text-gray-400 mb-8">
                     Please sign in to access the AI-powered workflow and start analyzing your documents.

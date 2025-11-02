@@ -25,6 +25,7 @@ interface InteractiveStepContentProps {
   // Processing visualizer
   processingTasks: ProcessingTask[];
   currentTaskIndex: number;
+  handleDownloadAttempt: () => boolean;
 }
 
 // --- Reusable Components ---

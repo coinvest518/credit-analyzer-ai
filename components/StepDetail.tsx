@@ -35,6 +35,7 @@ interface StepDetailProps {
   // Step 5 props
   trackingInfo: TrackingInfo | null;
   handleSetupTracking: (info: TrackingInfo) => void;
+  handleDownloadAttempt: () => boolean;
 }
 
 
