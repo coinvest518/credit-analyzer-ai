@@ -282,13 +282,15 @@ const App: React.FC = () => {
           onUpgradeClick={() => setShowPaymentModal(true)}
         />
         <main className="container mx-auto px-4 py-4 sm:py-8 md:py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-8 md:gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <div className="lg:col-span-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 mb-3 sm:mb-4">Agent Workflow</h2>
-              <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">Follow the AI agent's automated process to analyze documents and generate disputes.</p>
-              <WorkflowStepper steps={workflowSteps} activeStep={activeStep} completedStep={completedStep} onStepClick={handleStepClick} />
+              <div className="lg:sticky lg:top-24">
+                <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 mb-3 sm:mb-4">AI Credit Analysis</h2>
+                <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">Follow the steps to analyze your credit report and generate disputes.</p>
+                <WorkflowStepper steps={workflowSteps} activeStep={activeStep} completedStep={completedStep} onStepClick={handleStepClick} />
+              </div>
             </div>
-            <div className="lg:col-span-2">
+            <div className="lg:col-span-3">
               {error && (<div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 sm:px-4 sm:py-3 rounded-lg mb-4 sm:mb-6 text-sm sm:text-base" role="alert"><strong className="font-bold">Error: </strong><span className="block sm:inline">{error}</span></div>)}
               {activeStepData && (
                 <StepDetail 

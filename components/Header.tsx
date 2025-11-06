@@ -19,8 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick })
         <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
           <LogoIcon className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400 flex-shrink-0" />
           <h1 className="text-sm sm:text-xl md:text-2xl font-bold text-white tracking-tight truncate">
-            <span className="hidden sm:inline">AI Credit Report Analyzer</span>
-            <span className="sm:hidden">AI Credit Report Sass Tool</span>
+            AI Credit Report Analyzer
           </h1>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
