@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { HelmetProvider, Helmet } from 'react-helmet-async';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Header } from './components/Header';
 import { WorkflowStepper } from './components/WorkflowStepper';
@@ -7,6 +8,7 @@ import { AuthModal } from './components/AuthModal';
 import { PaymentModal } from './components/PaymentModal';
 import { Footer } from './components/Footer';
 import { EnvCheck } from './components/EnvCheck';
+import { Blog } from './components/Blog';
 import { useAuth } from './contexts/AuthContext';
 import { usePayment } from './contexts/PaymentContext';
 import { workflowSteps } from './constants';
@@ -19,6 +21,7 @@ const App: React.FC = () => {
   const [completedStep, setCompletedStep] = useState(0);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showBlog, setShowBlog] = useState(false);
 
   // App state
   const [isLoading, setIsLoading] = useState(false);
@@ -274,12 +277,51 @@ const App: React.FC = () => {
     setCompletedStep(Math.max(completedStep, 6));
   };
 
+  if (showBlog) {
+    return <Blog onBackClick={() => setShowBlog(false)} />;
+  }
+
   return (
-    <>
-      <div className="min-h-screen bg-gray-900 text-gray-200 font-sans">
+    <HelmetProvider>
+      <Helmet>
+        <title>AI Credit Report Analyzer - Free Credit Analysis & Dispute Letters</title>
+        <meta name="description" content="Analyze your credit report with AI, identify errors, and generate professional dispute letters. Free credit analysis tool powered by advanced AI." />
+        <meta name="keywords" content="credit report analysis, AI credit repair, dispute letters, FCRA violations, free credit check" />
+        <link rel="canonical" href="https://disputeai.xyz/" />
+        
+        {/* Open Graph */}
+        <meta property="og:title" content="AI Credit Report Analyzer - Free Credit Analysis" />
+        <meta property="og:description" content="Analyze your credit report with AI and generate dispute letters automatically." />
+        <meta property="og:image" content="https://disputeai.xyz/og-image.jpg" />
+        <meta property="og:url" content="https://disputeai.xyz/" />
+        <meta property="og:type" content="website" />
+        
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="AI Credit Report Analyzer" />
+        <meta name="twitter:description" content="Free AI-powered credit report analysis and dispute letter generation." />
+        
+        {/* JSON-LD for Organization */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "AI Credit Report Analyzer",
+            "description": "AI-powered credit report analysis and dispute letter generation tool",
+            "url": "https://disputeai.xyz",
+            "sameAs": [
+              "https://twitter.com/yourhandle",
+              "https://linkedin.com/company/yourcompany"
+            ]
+          })}
+        </script>
+      </Helmet>
+      <>
+        <div className="min-h-screen" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0c4a6e 100%)', color: '#f1f5f9' }}>
         <Header 
           onSignInClick={() => setShowAuthModal(true)}
           onUpgradeClick={() => setShowPaymentModal(true)}
+          onBlogClick={() => setShowBlog(true)}
         />
         <main className="container mx-auto px-4 py-4 sm:py-8 md:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
@@ -332,6 +374,7 @@ const App: React.FC = () => {
         <EnvCheck />
       </div>
     </>
+    </HelmetProvider>
   );
 };
 
