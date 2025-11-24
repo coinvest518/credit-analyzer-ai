@@ -28,7 +28,9 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const checkPaymentStatus = () => {
     if (!currentUser) {
       setIsPaid(false);
-      setHasUsedFreeDownload(false);
+      // Check anonymous free download usage
+      const anonymousFreeUsed = localStorage.getItem('anonymous_free_download');
+      setHasUsedFreeDownload(anonymousFreeUsed === 'used');
       return;
     }
     
@@ -72,8 +74,10 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const markFreeDownloadUsed = () => {
     if (currentUser) {
       localStorage.setItem(`free_download_${currentUser.uid}`, 'used');
-      setHasUsedFreeDownload(true);
+    } else {
+      localStorage.setItem('anonymous_free_download', 'used');
     }
+    setHasUsedFreeDownload(true);
   };
 
   const canDownload = isPaid || !hasUsedFreeDownload;

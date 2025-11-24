@@ -137,7 +137,7 @@ const App: React.FC = () => {
 
   const handleAnalyze = async () => {
     if (!uploadedFile) {
-        setError("Please upload a document first.");
+      setError("Please upload your credit report first.");
         return;
     }
     setAnalysisResult(null);
@@ -148,7 +148,7 @@ const App: React.FC = () => {
     try {
         const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_AI_API_KEY! });
         const imagePart = { inlineData: { mimeType: uploadedFile.type, data: uploadedFile.content } };
-        const textPart = { text: `Act as an expert paralegal specializing in consumer credit law. Perform a forensic analysis of the provided document to identify ALL negative or inaccurate accounts.
+        const textPart = { text: `Act as an expert paralegal specializing in consumer credit law. Perform a forensic analysis of the provided credit report and any supporting documents to identify ALL negative or inaccurate accounts.
 
 1.  **High-Level Summary**: Start with a brief 'globalSummary' of the overall findings.
 2.  **Detailed Account Analysis**: Create an array called 'analyzedAccounts'. For EACH negative or inaccurate account you find, create a separate JSON object in this array with the following details:
@@ -194,7 +194,7 @@ const App: React.FC = () => {
 
         const responseSchema = {
             type: Type.OBJECT, properties: {
-                globalSummary: { type: Type.STRING, description: "A brief, high-level summary of the overall findings from the entire document." },
+            globalSummary: { type: Type.STRING, description: "A brief, high-level summary of the overall findings from the entire credit report." },
                 analyzedAccounts: { type: Type.ARRAY, items: analyzedAccountSchema }
             }, required: ['globalSummary', 'analyzedAccounts']
         };
@@ -219,7 +219,7 @@ const App: React.FC = () => {
     setIsLoading(true); setError(null);
     try {
         const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_AI_API_KEY! });
-        const prompt = `You are a consumer law expert. Based on the following structured analysis of a credit document which contains multiple accounts, generate a single, consolidated narrative summary report. The report should be easy for a layperson to understand. Start with the 'globalSummary', then, for each account in the 'analyzedAccounts' array, create a section. In each section, explain the potential violations in detail, referencing the relevant law (e.g., FCRA, FDCPA) and explaining *why* it's a violation and what it means for the consumer. Analysis Data: ${JSON.stringify(analysisResult, null, 2)}. Generate the report now. Use markdown for formatting (e.g., # Heading, ## Account Heading, - List item, **bold**).`;
+        const prompt = `You are a consumer law expert. Based on the following structured analysis of a credit report that contains multiple accounts, generate a single, consolidated narrative summary report. The report should be easy for a layperson to understand. Start with the 'globalSummary', then, for each account in the 'analyzedAccounts' array, create a section. In each section, explain the potential violations in detail, referencing the relevant law (e.g., FCRA, FDCPA) and explaining *why* it's a violation and what it means for the consumer. Analysis Data: ${JSON.stringify(analysisResult, null, 2)}. Generate the report now. Use markdown for formatting (e.g., # Heading, ## Account Heading, - List item, **bold**).`;
         const response = await ai.models.generateContent({ model: 'gemini-2.5-pro', contents: prompt });
         setSummaryReport(response.text);
     } catch (e: any) { setError(`Report generation failed: ${e.message}`); console.error(e); } finally { setIsLoading(false); }
@@ -296,7 +296,7 @@ const App: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <div className="lg:col-span-1">
               <div className="lg:sticky lg:top-24">
-                <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 mb-3 sm:mb-4">AI Credit Analysis</h2>
+                <h2 className="text-xl sm:text-2xl font-bold text-cyan-400 mb-3 sm:mb-4">AI Credit Report Analysis</h2>
                 <p className="text-sm sm:text-base text-gray-400 mb-4 sm:mb-6">Follow the steps to analyze your credit report and generate disputes.</p>
                 <WorkflowStepper steps={workflowSteps} activeStep={activeStep} completedStep={completedStep} onStepClick={handleStepClick} />
               </div>

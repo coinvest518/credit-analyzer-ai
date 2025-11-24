@@ -4,7 +4,7 @@ import type { WorkflowStep } from './types';
 export const workflowSteps: WorkflowStep[] = [
   {
     id: 1,
-    title: 'Meet Your AI Analyst',
+    title: 'Meet Your AI Credit Report Analyst',
     icon: AgentIcon,
     description: 'Start your journey to a better credit score with your AI-powered credit report analyzer.',
     details: [

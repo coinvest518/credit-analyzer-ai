@@ -129,9 +129,10 @@ const AnalysisDisplay: React.FC<{result: AnalysisResult}> = ({ result }) => {
     </div>);
 };
 
-const LetterPackageDisplay: React.FC<{letterPackage: LetterPackage}> = ({ letterPackage }) => {
+const LetterPackageDisplay: React.FC<{letterPackage: LetterPackage; handleDownloadAttempt: () => boolean}> = ({ letterPackage, handleDownloadAttempt }) => {
     const [activeTab, setActiveTab] = useState(Object.keys(letterPackage)[0]);
     const handleDownloadPackage = () => {
+        if (!handleDownloadAttempt()) return;
         const content = Object.entries(letterPackage)
             .map(([key, value]) => `--- START: ${key.replace(/([A-Z])/g, ' $1').toUpperCase()} LETTER ---\n\n${value}\n\n--- END: ${key.replace(/([A-Z])/g, ' $1').toUpperCase()} LETTER ---\n\n\n`)
             .join('');
@@ -228,23 +229,23 @@ export const InteractiveStepContent: React.FC<InteractiveStepContentProps> = (pr
             case 1:
                  return (
                     <div className="text-center space-y-4 animate-fade-in-slow p-4">
-                        <h3 className="text-3xl font-bold text-white tracking-tight">Meet Your AI Assistant</h3>
+                        <h3 className="text-3xl font-bold text-white tracking-tight">Meet Your AI Credit Report Assistant</h3>
                         <p className="text-lg text-gray-300 max-w-xl mx-auto">
-                            Hello! I'm here to guide you through a secure, step-by-step process to analyze your documents, identify potential issues, and generate professional dispute letters.
+                            Hello! I'm here to guide you through a secure, step-by-step process to analyze your credit report and supporting documents, identify potential errors and violations, and generate professional dispute letters to help repair your credit.
                         </p>
                         <div className="bg-gray-900/50 p-4 rounded-lg mt-4 max-w-lg mx-auto">
                             <p className="font-semibold text-cyan-400">Ready to start?</p>
-                            <p className="text-gray-400 text-sm">Click the "Let's Begin" button below to proceed to the first task: uploading your document.</p>
+                            <p className="text-gray-400 text-sm">Click the "Let's Begin" button below to proceed to the first task: uploading your credit report (PDF preferred) or supporting documents.</p>
                         </div>
                     </div>
                 );
             case 2:
-                if (uploadedFile) return (<SuccessMessage title="Document Processed Successfully!"><p><strong>File:</strong> {uploadedFile.name}</p><p>The document is now ready for AI analysis in the next step.</p></SuccessMessage>);
+                if (uploadedFile) return (<SuccessMessage title="Credit Report Processed Successfully!"><p><strong>File:</strong> {uploadedFile.name}</p><p>Your credit report (and any uploaded documents) is now ready for AI analysis in the next step.</p></SuccessMessage>);
                 return <FileUpload onFileUpload={handleFileUpload} isLoading={isLoading} />;
             case 3:
                 if (analysisResult) return <AnalysisDisplay result={analysisResult} />;
-                if (uploadedFile) return <ActionButton onClick={handleAnalyze} isLoading={isLoading} text="Begin AI Analysis" loadingText="Analyzing..." />;
-                return <p className="text-center text-gray-500">Please upload and process a document in Step 2 to begin analysis.</p>;
+                if (uploadedFile) return <ActionButton onClick={handleAnalyze} isLoading={isLoading} text="Begin Credit Report Analysis" loadingText="Analyzing report..." />;
+                return <p className="text-center text-gray-500">Please upload and process your credit report in Step 2 to begin the AI credit report analysis.</p>;
             case 4:
                  if (analysisResult) {
                     if (summaryReport && actionPlan) {
@@ -275,11 +276,11 @@ export const InteractiveStepContent: React.FC<InteractiveStepContentProps> = (pr
                         </div>
                     );
                  }
-                return <p className="text-center text-gray-500">Complete analysis in Step 3 to generate a strategy.</p>;
+                return <p className="text-center text-gray-500">Complete the credit report analysis in Step 3 to generate a credit repair strategy.</p>;
             case 5:
-                if (letterPackage) return <LetterPackageDisplay letterPackage={letterPackage} />;
+                if (letterPackage) return <LetterPackageDisplay letterPackage={letterPackage} handleDownloadAttempt={props.handleDownloadAttempt} />;
                 if (actionPlan) return <ActionButton onClick={handleGenerateLetterPackage} isLoading={isLoading} text="Generate Letter Package" loadingText="Generating Letters..." icon={PackageIcon} />;
-                return <p className="text-center text-gray-500">Generate a strategy in Step 4 to create letters.</p>;
+                return <p className="text-center text-gray-500">Generate a strategy in Step 4 to create dispute letters for your credit report.</p>;
             case 6:
                 if (trackingInfo) return <TrackingDisplay info={trackingInfo} />;
                 if (letterPackage) return <AIAgentSetup onSetup={handleSetupTracking} />;

@@ -16,8 +16,7 @@ const BuyMeACoffeeButton: React.FC<BuyMeACoffeeButtonProps> = ({ className }) =>
       className={`inline-flex items-center bg-[#FF5F5F] text-white transition-colors hover:bg-opacity-90 ${className || 'px-4 py-2 rounded-lg font-semibold'}`}
     >
       <span className="mr-2">🛒</span>
-      <span className="hidden sm:inline">Credit Repair Products</span>
-      <span className="sm:hidden">🛒</span>
+      <span>Credit Repair Products</span>
     </a>
   );
 };
