@@ -1,6 +1,5 @@
 
 import React, { useState } from 'react';
-import ReactMarkdown from 'react-markdown';
 import type { WorkflowStep, UploadedFile, AnalysisResult, ProcessingTask, AnalyzedAccount, LetterPackage, TrackingInfo } from '../types';
 import { SpinnerIcon, FileIcon, CopyIcon, DownloadIcon, ShieldCheckIcon, CheckIcon, DocumentTextIcon, ListBulletIcon, QuoteIcon, LightbulbIcon, ExclamationTriangleIcon, ClipboardCheckIcon, ChevronDownIcon, PackageIcon, CalendarIcon, EmailIcon } from './icons/Icons';
 import { ProcessingVisualizer } from './ProcessingVisualizer';
@@ -44,27 +43,23 @@ const SuccessMessage: React.FC<{ title: string, children: React.ReactNode }> = (
 );
 
 const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
+    const formatMarkdown = (text: string) => {
+        let html = text;
+        html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-200 mt-3 mb-1">$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-100 mt-4 mb-2">$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-100 mt-6 mb-3">$1</h1>');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-100">$1</strong>');
+        html = html.replace(/^\- (.*$)/gim, '<li class="text-gray-300 marker:text-cyan-400">$1</li>');
+        html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-outside ml-5 my-2 space-y-1">$1</ul>');
+        html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-800 text-cyan-300 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
+        html = html.split('\n\n').map(para => {
+            if (!para.match(/^<[h|u|l]/)) return `<p class="my-2 text-gray-300">${para}</p>`;
+            return para;
+        }).join('\n');
+        return html;
+    };
     return (
-        <div className="text-gray-300 leading-relaxed prose prose-invert prose-sm max-w-none">
-            <ReactMarkdown
-                components={{
-                    h1: ({children}) => <h1 className="text-2xl font-bold text-gray-100 mt-6 mb-3">{children}</h1>,
-                    h2: ({children}) => <h2 className="text-xl font-semibold text-gray-100 mt-4 mb-2">{children}</h2>,
-                    h3: ({children}) => <h3 className="text-lg font-semibold text-gray-200 mt-3 mb-1">{children}</h3>,
-                    p: ({children}) => <p className="my-2 text-gray-300">{children}</p>,
-                    ul: ({children}) => <ul className="list-disc list-outside ml-5 my-2 space-y-1">{children}</ul>,
-                    ol: ({children}) => <ol className="list-decimal list-outside ml-5 my-2 space-y-1">{children}</ol>,
-                    li: ({children}) => <li className="text-gray-300 marker:text-cyan-400">{children}</li>,
-                    strong: ({children}) => <strong className="font-semibold text-gray-100">{children}</strong>,
-                    em: ({children}) => <em className="italic text-gray-200">{children}</em>,
-                    code: ({children}) => <code className="bg-gray-800 text-cyan-300 px-1 py-0.5 rounded text-sm font-mono">{children}</code>,
-                    pre: ({children}) => <pre className="bg-gray-800 text-gray-200 p-3 rounded-lg overflow-x-auto my-3">{children}</pre>,
-                    blockquote: ({children}) => <blockquote className="border-l-4 border-cyan-500 pl-4 my-3 text-gray-400 italic">{children}</blockquote>
-                }}
-            >
-                {content}
-            </ReactMarkdown>
-        </div>
+        <div className="text-gray-300 leading-relaxed prose prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }} />
     );
 };
 

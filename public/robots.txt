@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://disputeai.xyz/sitemap.xml
