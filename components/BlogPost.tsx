@@ -16,7 +16,7 @@ export const BlogPost: React.FC<BlogPostProps> = ({ post, onBackClick }) => {
   return (
     <>
       <div className="min-h-screen bg-white">
-        <Header onBlogClick={onBackClick} />
+        <Header onHomeClick={onBackClick} showHomeButton={true} />
         
         <main className="max-w-3xl mx-auto px-6 py-16">
           <button 

@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Header } from './Header';
 import { Footer } from './Footer';
 import { BlogPost as BlogPostComponent } from './BlogPost';
-import { blogPosts } from '../blogData';
+import { blogPosts, BlogPost } from '../blogData';
 
 interface BlogProps {
   onBackClick?: () => void;
@@ -10,20 +10,30 @@ interface BlogProps {
 
 export const Blog: React.FC<BlogProps> = ({ onBackClick }) => {
   const [selectedPost, setSelectedPost] = useState<number | null>(null);
+  const [allBlogs, setAllBlogs] = useState<BlogPost[]>(blogPosts);
+
+  useEffect(() => {
+    // Load AI-generated blogs from localStorage
+    const savedBlogs = localStorage.getItem('ai_generated_blogs');
+    if (savedBlogs) {
+      const aiBlogs = JSON.parse(savedBlogs);
+      setAllBlogs([...blogPosts, ...aiBlogs]);
+    }
+  }, []);
 
   if (selectedPost !== null) {
-    const post = blogPosts.find(p => p.id === selectedPost);
+    const post = allBlogs.find(p => p.id === selectedPost);
     if (post) {
       return <BlogPostComponent post={post} onBackClick={() => setSelectedPost(null)} />;
     }
   }
-  const featuredPost = blogPosts.find(post => post.featured);
-  const editorPicks = blogPosts.filter(post => !post.featured).slice(0, 6);
-  const latestPosts = blogPosts.slice(0, 3);
+  const featuredPost = allBlogs.find(post => post.featured);
+  const editorPicks = allBlogs.filter(post => !post.featured).slice(0, 6);
+  const latestPosts = allBlogs.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header onBlogClick={onBackClick} />
+      <Header onHomeClick={onBackClick} showHomeButton={true} />
       
       <main className="container mx-auto px-4 py-12">
         {/* Editor Pick Section */}

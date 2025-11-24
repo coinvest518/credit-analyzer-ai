@@ -8,6 +8,7 @@ import { PaymentModal } from './components/PaymentModal';
 import { Footer } from './components/Footer';
 import { EnvCheck } from './components/EnvCheck';
 import { Blog } from './components/Blog';
+import { BlogAdmin } from './components/BlogAdmin';
 import { useAuth } from './contexts/AuthContext';
 import { usePayment } from './contexts/PaymentContext';
 import { workflowSteps } from './constants';
@@ -21,6 +22,7 @@ const App: React.FC = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showBlog, setShowBlog] = useState(false);
+  const [showBlogAdmin, setShowBlogAdmin] = useState(false);
 
   // App state
   const [isLoading, setIsLoading] = useState(false);
@@ -278,10 +280,24 @@ const App: React.FC = () => {
 
   useEffect(() => {
     document.title = 'AI Credit Report Analyzer - Free Credit Analysis & Dispute Letters';
+    
+    // Admin keyboard shortcut: Ctrl+Shift+B
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key === 'B') {
+        setShowBlogAdmin(true);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
   }, []);
 
   if (showBlog) {
     return <Blog onBackClick={() => setShowBlog(false)} />;
+  }
+
+  if (showBlogAdmin) {
+    return <BlogAdmin onBackClick={() => setShowBlogAdmin(false)} />;
   }
 
   return (
@@ -292,6 +308,12 @@ const App: React.FC = () => {
           onUpgradeClick={() => setShowPaymentModal(true)}
           onBlogClick={() => setShowBlog(true)}
         />
+        {/* Secret Admin Access - Press Ctrl+Shift+B */}
+        {typeof window !== 'undefined' && (
+          <div style={{ position: 'fixed', bottom: 0, right: 0, opacity: 0.01, fontSize: '1px' }}>
+            <button onClick={() => setShowBlogAdmin(true)}>Admin</button>
+          </div>
+        )}
         <main className="container mx-auto px-4 py-4 sm:py-8 md:py-12">
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8 md:gap-12">
             <div className="lg:col-span-1">
