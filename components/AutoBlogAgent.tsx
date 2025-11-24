@@ -58,7 +58,9 @@ Respond with JSON:
       contents: prompt 
     });
 
-    const cleanedText = response.text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
+    let cleanedText = response.text.trim();
+    // Remove markdown code blocks if present
+    cleanedText = cleanedText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
     return cleanedText;
   };
 
@@ -85,24 +87,25 @@ Requirements:
 - Keywords: 5-7 relevant terms
 - Read time: Estimate in minutes
 
-Format as JSON:
-{
-  "title": "Blog title",
-  "excerpt": "Brief excerpt",
-  "content": "Full markdown content",
-  "metaDescription": "SEO description",
-  "keywords": ["keyword1", "keyword2"],
-  "readTime": 8,
-  "author": "AI Content Agent"
-}`;
+Generate the blog post content.`;
 
     const response = await ai.models.generateContent({ 
-      model: 'gemini-2.5-pro', 
+      model: 'gemini-2.5-flash', 
       contents: prompt 
     });
 
-    const cleanedText = response.text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
-    const blogData = JSON.parse(cleanedText);
+    const content = response.text.trim();
+    
+    // Create blog data manually to avoid JSON parsing issues
+    const blogData = {
+      title: strategy.suggestedTopic,
+      excerpt: content.substring(0, 160).trim() + '...',
+      content: content,
+      metaDescription: content.substring(0, 155).trim() + '...',
+      keywords: strategy.targetKeywords,
+      readTime: Math.ceil(content.split(' ').length / 200),
+      author: 'AI Content Agent'
+    };
 
     const savedBlogs = localStorage.getItem('ai_generated_blogs');
     const existingBlogs = savedBlogs ? JSON.parse(savedBlogs) : [];
@@ -152,7 +155,8 @@ Format as JSON:
       setStatus('idle');
       
     } catch (error: any) {
-      addLog(`❌ Error: ${error.message}`);
+      const errorMsg = error.message.length > 100 ? error.message.substring(0, 100) + '...' : error.message;
+      addLog(`❌ Error: ${errorMsg}`);
       setStatus('idle');
     }
   };
