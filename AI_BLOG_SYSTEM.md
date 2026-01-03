@@ -110,8 +110,8 @@ Each AI-generated post includes:
 
 ## AI Models Used
 
-- **Strategy Analysis**: Gemini 2.5 Flash (fast, efficient)
-- **Content Generation**: Gemini 2.5 Pro (high quality)
+- **Strategy Analysis**: Mistral Large (fast, efficient)
+- **Content Generation**: Mistral Large (high quality)
 
 ## Activity Log
 

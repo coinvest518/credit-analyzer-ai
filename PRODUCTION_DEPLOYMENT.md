@@ -71,7 +71,7 @@ npm run build
    - Add:
      - `VITE_ADMIN_PASSWORD` = `YourSecurePassword`
      - `VITE_AUTO_START_BLOG_AGENT` = `false`
-     - `VITE_GOOGLE_AI_API_KEY` = `your_api_key`
+     - `VITE_MISTRAL_API_KEY` = `your_api_key`
      - (All other existing env vars)
 
 3. **Deploy:**
@@ -97,10 +97,10 @@ npm run build
 - ✅ Hidden keyboard shortcut (`Ctrl + Shift + B`)
 
 ### 3. API Key Protection
-- ✅ Google AI API key in environment variables
+- ✅ Mistral AI API key in environment variables
 - ✅ Never commit `.env.local` to git
 - ✅ Use different API keys for dev/prod
-- ✅ Monitor API usage in Google Cloud Console
+- ✅ Monitor API usage in Mistral Console
 
 ### 4. Blog Agent Safety
 - ✅ Agent doesn't auto-start by default
@@ -118,7 +118,7 @@ npm run build
 - [ ] Review activity logs
 
 ### First Week:
-- [ ] Monitor API usage (Google Cloud Console)
+- [ ] Monitor API usage (Mistral Console)
 - [ ] Check generated blog quality
 - [ ] Adjust agent interval if needed
 - [ ] Backup blog data (export JSON)
@@ -187,7 +187,7 @@ sessionStorage.removeItem('blog_admin_auth')
 - ~60,000 tokens per day
 - ~1.8M tokens per month
 
-### Cost Estimate (Gemini 2.5 Pro):
+### Cost Estimate (Mistral Large):
 - Input: $1.25 per 1M tokens
 - Output: $5.00 per 1M tokens
 - **Estimated: $5-10 per month**
@@ -226,7 +226,7 @@ VITE_ADMIN_PASSWORD=YourSecurePassword123!
 VITE_AUTO_START_BLOG_AGENT=false
 
 # Required for AI Features
-VITE_GOOGLE_AI_API_KEY=your_api_key_here
+VITE_MISTRAL_API_KEY=your_api_key_here
 
 # Required for Auth
 VITE_FIREBASE_API_KEY=your_firebase_key

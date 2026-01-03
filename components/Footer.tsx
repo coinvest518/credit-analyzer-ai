@@ -21,11 +21,14 @@ export const Footer: React.FC = () => {
   return (
     <footer className="bg-gray-900/95 backdrop-blur-sm border-t border-gray-700/50 mt-16">
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center text-gray-400">
-          <p>&copy; 2024 AI Credit Report Analyzer. All rights reserved.</p>
-          <div className="mt-4">
-            <BuyMeACoffeeButton />
+        <div className="flex flex-col items-center space-y-4">
+          <div className="flex flex-wrap justify-center gap-3">
+            <a href="https://consumerai.info" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium bg-cyan-600 hover:bg-cyan-500 text-white rounded-lg transition-colors">AI Tools</a>
+            <a href="https://fdwa.site" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">Consulting</a>
+            <a href="https://cal.com/bookme-daniel" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-colors">Book Call</a>
           </div>
+          <p className="text-gray-400 text-sm">&copy; 2024 AI Credit Report Analyzer. All rights reserved.</p>
+          <BuyMeACoffeeButton />
         </div>
       </div>
     </footer>

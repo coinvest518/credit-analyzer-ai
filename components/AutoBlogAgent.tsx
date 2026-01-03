@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { Mistral } from "@mistralai/mistralai";
 import { blogPosts, BlogPost } from '../blogData';
 
 interface AutoBlogAgentProps {
@@ -31,7 +31,7 @@ export const AutoBlogAgent: React.FC<AutoBlogAgentProps> = ({ isActive, onToggle
       date: b.date
     }));
 
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_AI_API_KEY! });
+    const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
     
     const prompt = `You are an AI blog content strategist for a credit repair website.
 
@@ -53,19 +53,17 @@ Respond with JSON:
   "estimatedValue": "high/medium/low"
 }`;
 
-    const response = await ai.models.generateContent({ 
-      model: 'gemini-2.5-flash', 
-      contents: prompt 
+    const response = await client.chat.complete({ 
+      model: 'mistral-large-latest', 
+      messages: [{ role: 'user', content: prompt }],
+      responseFormat: { type: 'json_object' }
     });
 
-    let cleanedText = response.text.trim();
-    // Remove markdown code blocks if present
-    cleanedText = cleanedText.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '');
-    return cleanedText;
+    return response.choices[0].message.content!;
   };
 
   const generateBlogPost = async (strategy: any): Promise<BlogPost> => {
-    const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_AI_API_KEY! });
+    const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
     
     const prompt = `You are an expert credit repair content writer.
 
@@ -89,12 +87,12 @@ Requirements:
 
 Generate the blog post content.`;
 
-    const response = await ai.models.generateContent({ 
-      model: 'gemini-2.5-flash', 
-      contents: prompt 
+    const response = await client.chat.complete({ 
+      model: 'mistral-large-latest', 
+      messages: [{ role: 'user', content: prompt }]
     });
 
-    const content = response.text.trim();
+    const content = response.choices[0].message.content!.trim();
     
     // Create blog data manually to avoid JSON parsing issues
     const blogData = {
@@ -174,8 +172,8 @@ Generate the blog post content.`;
     };
 
     // Check if API key is available
-    if (!import.meta.env.VITE_GOOGLE_AI_API_KEY) {
-      addLog('❌ Error: Google AI API key not configured');
+    if (!import.meta.env.VITE_MISTRAL_API_KEY) {
+      addLog('❌ Error: Mistral AI API key not configured');
       onToggle(false);
       return;
     }

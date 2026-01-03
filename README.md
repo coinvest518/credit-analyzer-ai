@@ -4,7 +4,7 @@ An intelligent credit repair application that uses AI to analyze credit reports,
 
 ## Features
 
-- 🤖 **AI-Powered Analysis**: Uses Google Gemini AI to analyze credit documents
+- 🤖 **AI-Powered Analysis**: Uses Mistral AI to analyze credit documents
 - 🔍 **Violation Detection**: Identifies FCRA, FDCPA, and other legal violations
 - 📝 **Automated Letter Generation**: Creates professional dispute letters
 - 🔐 **Firebase Authentication**: Secure Google sign-in
@@ -16,7 +16,7 @@ An intelligent credit repair application that uses AI to analyze credit reports,
 - **Frontend**: React 19, TypeScript, Tailwind CSS
 - **Build Tool**: Vite
 - **Authentication**: Firebase Auth
-- **AI**: Google Gemini API
+- **AI**: Mistral AI API
 - **Payments**: Stripe Payment Links
 - **Hosting**: Ready for Vercel/Netlify deployment
 
@@ -37,8 +37,8 @@ npm install
 Create a `.env.local` file in the root directory:
 
 ```env
-# Google AI API Key
-VITE_GOOGLE_AI_API_KEY=your_gemini_api_key_here
+# Mistral AI API Key
+VITE_MISTRAL_API_KEY=your_mistral_api_key_here
 
 # Firebase Configuration
 VITE_FIREBASE_API_KEY=your_firebase_api_key
@@ -58,9 +58,9 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 3. Add your domain to authorized domains
 4. Copy configuration values to `.env.local`
 
-### 5. Google AI Setup
-1. Get API key from [Google AI Studio](https://aistudio.google.com)
-2. Add to `.env.local` as `VITE_GOOGLE_AI_API_KEY`
+### 5. Mistral AI Setup
+1. Get API key from [Mistral AI Console](https://console.mistral.ai)
+2. Add to `.env.local` as `VITE_MISTRAL_API_KEY`
 
 ### 6. Stripe Setup
 1. Create Stripe account and payment link

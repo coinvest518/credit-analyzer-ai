@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { GoogleGenAI } from "@google/genai";
+import { Mistral } from "@mistralai/mistralai";
 import { SpinnerIcon } from './icons/Icons';
 import type { BlogPost } from '../blogData';
 
@@ -29,7 +29,7 @@ export const AIBlogManager: React.FC<AIBlogManagerProps> = ({ onClose, onSaveBlo
     setError(null);
 
     try {
-      const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_GOOGLE_AI_API_KEY! });
+      const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
       
       const prompt = `You are an expert content writer specializing in credit repair, consumer rights, and financial education. 
 
@@ -64,13 +64,13 @@ Format your response as JSON:
   "author": "AI Content Writer"
 }`;
 
-      const response = await ai.models.generateContent({ 
-        model: 'gemini-2.5-pro', 
-        contents: prompt 
+      const response = await client.chat.complete({ 
+        model: 'mistral-large-latest', 
+        messages: [{ role: 'user', content: prompt }],
+        responseFormat: { type: 'json_object' }
       });
 
-      const cleanedText = response.text.trim().replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      const blogData = JSON.parse(cleanedText);
+      const blogData = JSON.parse(response.choices[0].message.content!);
 
       const newBlog: Partial<BlogPost> = {
         ...blogData,

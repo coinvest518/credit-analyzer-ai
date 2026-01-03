@@ -49,7 +49,7 @@ export const workflowSteps: WorkflowStep[] = [
       { name: 'Extracting key entities...' },
       { name: 'Scanning for violations...' },
       { name: 'Scoring dispute strength...' },
-      { name: 'Contacting Gemini AI...' },
+      { name: 'Contacting Mistral AI...' },
     ]
   },
   {

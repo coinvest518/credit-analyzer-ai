@@ -5,7 +5,7 @@ export const EnvCheck: React.FC = () => {
     VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'Set' : 'Missing',
     VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'Set' : 'Missing',
     VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'Set' : 'Missing',
-    VITE_GOOGLE_AI_API_KEY: import.meta.env.VITE_GOOGLE_AI_API_KEY ? 'Set' : 'Missing',
+    VITE_MISTRAL_API_KEY: import.meta.env.VITE_MISTRAL_API_KEY ? 'Set' : 'Missing',
   };
 
   // Only show in development or if there are missing vars
