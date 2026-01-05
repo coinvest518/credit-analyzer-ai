@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Header } from './Header';
-import { Footer } from './Footer';
 import { BlogPost as BlogPostComponent } from './BlogPost';
 import { blogPosts, BlogPost } from '../blogData';
 
@@ -32,9 +30,7 @@ export const Blog: React.FC<BlogProps> = ({ onBackClick }) => {
   const latestPosts = allBlogs.slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header onHomeClick={onBackClick} showHomeButton={true} />
-      
+    <div className="bg-gray-50">
       <main className="container mx-auto px-4 py-12">
         {/* Editor Pick Section */}
         <section className="mb-16">
@@ -143,8 +139,6 @@ export const Blog: React.FC<BlogProps> = ({ onBackClick }) => {
           </div>
         </section>
       </main>
-
-      <Footer />
     </div>
   );
 };

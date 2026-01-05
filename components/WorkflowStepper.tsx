@@ -19,11 +19,11 @@ export const WorkflowStepper: React.FC<WorkflowStepperProps> = ({ steps, activeS
           const circleClass = isCompleted 
             ? 'bg-green-500 ring-green-500/30' 
             : isActive 
-            ? 'bg-cyan-500 ring-cyan-500/30 shadow-lg shadow-cyan-500/50' 
+            ? 'bg-primary ring-primary/30 shadow-lg shadow-primary/50' 
             : 'bg-gray-600 ring-gray-700';
 
-          const textClass = isActive ? 'text-cyan-300 font-semibold' : 'text-gray-400 group-hover:text-gray-300';
-          const descriptionClass = isActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-gray-400';
+          const textClass = isActive ? 'text-primary font-semibold' : 'text-muted-foreground group-hover:text-foreground';
+          const descriptionClass = isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground';
 
           return (
             <li key={step.id} className="mb-6 sm:mb-8 relative">

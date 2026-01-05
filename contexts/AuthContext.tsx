@@ -11,7 +11,8 @@ import {
     signInWithEmailAndPassword,
     type User 
 } from "firebase/auth";
-import { auth, googleProvider } from '../firebase';
+import { auth, googleProvider, db } from '../firebase';
+import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 
 interface AuthContextType {
     currentUser: User | null;
@@ -146,7 +147,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // Ensure user document exists in Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        displayName: user.displayName,
+                        photoURL: user.photoURL,
+                        createdAt: serverTimestamp(),
+                        isPaid: false,
+                        hasUsedFreeDownload: false
+                    }, { merge: true });
+                }
+            }
             setCurrentUser(user);
             setLoading(false);
         });

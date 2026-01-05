@@ -1,9 +1,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Analytics } from '@vercel/analytics/react';
-import App from './App';
+import AppRouter from './AppRouter';
 import { AuthProvider } from './contexts/AuthContext';
 import { PaymentProvider } from './contexts/PaymentContext';
+import './index.css';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -15,7 +16,7 @@ root.render(
   <React.StrictMode>
     <AuthProvider>
       <PaymentProvider>
-        <App />
+        <AppRouter />
         <Analytics />
       </PaymentProvider>
     </AuthProvider>

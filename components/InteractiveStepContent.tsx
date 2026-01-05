@@ -30,7 +30,7 @@ interface InteractiveStepContentProps {
 
 // --- Reusable Components ---
 const ActionButton: React.FC<{onClick: () => void; isLoading: boolean; text: string; loadingText: string; icon?: React.FC<any>}> = ({ onClick, isLoading, text, loadingText, icon: Icon }) => (
-    <button onClick={onClick} disabled={isLoading} className="w-full px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-wait disabled:transform-none flex items-center justify-center text-lg shadow-lg shadow-cyan-500/20 hover:shadow-cyan-500/40">
+    <button onClick={onClick} disabled={isLoading} className="w-full px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-wait disabled:transform-none flex items-center justify-center text-lg shadow-lg shadow-primary/20 hover:shadow-primary/40">
         {isLoading ? <><SpinnerIcon className="w-5 h-5 mr-3 animate-spin" /> {loadingText}</> : <>{Icon && <Icon className="w-5 h-5 mr-3"/>}{text}</>}
     </button>
 );
@@ -45,29 +45,29 @@ const SuccessMessage: React.FC<{ title: string, children: React.ReactNode }> = (
 const MarkdownRenderer: React.FC<{ content: string }> = ({ content }) => {
     const formatMarkdown = (text: string) => {
         let html = text;
-        html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-gray-200 mt-3 mb-1">$1</h3>');
-        html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-gray-100 mt-4 mb-2">$1</h2>');
-        html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-gray-100 mt-6 mb-3">$1</h1>');
-        html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-100">$1</strong>');
-        html = html.replace(/^\- (.*$)/gim, '<li class="text-gray-300 marker:text-cyan-400">$1</li>');
+        html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold text-foreground mt-3 mb-1">$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-semibold text-foreground mt-4 mb-2">$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-bold text-foreground mt-6 mb-3">$1</h1>');
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-foreground">$1</strong>');
+        html = html.replace(/^\- (.*$)/gim, '<li class="text-foreground marker:text-primary">$1</li>');
         html = html.replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-outside ml-5 my-2 space-y-1">$1</ul>');
-        html = html.replace(/`([^`]+)`/g, '<code class="bg-gray-800 text-cyan-300 px-1 py-0.5 rounded text-sm font-mono">$1</code>');
+        html = html.replace(/`([^`]+)`/g, '<code class="bg-muted text-foreground px-2 py-0.5 rounded text-sm font-mono border border-border">$1</code>');
         html = html.split('\n\n').map(para => {
-            if (!para.match(/^<[h|u|l]/)) return `<p class="my-2 text-gray-300">${para}</p>`;
+            if (!para.match(/^<[h|u|l]/)) return `<p class="my-2 text-foreground">${para}</p>`;
             return para;
         }).join('\n');
         return html;
     };
     return (
-        <div className="text-gray-300 leading-relaxed prose prose-invert prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }} />
+        <div className="text-foreground leading-relaxed prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: formatMarkdown(content) }} />
     );
 };
 
 const GeneratedContentDisplay: React.FC<{ icon: React.FC<any>, title: string, content: string }> = ({ icon: Icon, title, content }) => (
     <div className="space-y-3 animate-fade-in-slow">
         <div className="flex items-center space-x-3 border-b border-gray-700 pb-2">
-            <Icon className="w-6 h-6 text-cyan-400 flex-shrink-0" />
-            <h3 className="text-xl font-bold text-cyan-300">{title}</h3>
+            <Icon className="w-6 h-6 text-primary flex-shrink-0" />
+            <h3 className="text-xl font-bold text-primary">{title}</h3>
         </div>
         <div className="p-4 bg-gray-900/50 rounded-lg">
              <MarkdownRenderer content={content} />
@@ -82,9 +82,9 @@ const FileUpload: React.FC<{onFileUpload: (file: File) => void; isLoading: boole
     const handleDragEvents = (e: React.DragEvent<HTMLLabelElement>, isEntering: boolean) => { e.preventDefault(); e.stopPropagation(); setIsDragging(isEntering); };
     const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => { handleDragEvents(e, false); const file = e.dataTransfer.files?.[0]; if (file) onFileUpload(file); };
     return (
-        <div className={`text-center p-6 border-2 border-dashed rounded-lg transition-colors duration-300 ${isDragging ? 'border-cyan-400 bg-gray-800' : 'border-gray-600 hover:border-cyan-500 hover:bg-gray-800/50'}`}>
+        <div className={`text-center p-6 border-2 border-dashed rounded-lg transition-colors duration-300 ${isDragging ? 'border-primary bg-gray-800' : 'border-gray-600 hover:border-primary hover:bg-gray-800/50'}`}>
             <label htmlFor="file-upload" className="cursor-pointer" onDragEnter={(e) => handleDragEvents(e, true)} onDragLeave={(e) => handleDragEvents(e, false)} onDragOver={(e) => e.preventDefault()} onDrop={handleDrop}>
-                <div className="text-cyan-400 mb-2"><svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg></div>
+                <div className="text-primary mb-2"><svg className="mx-auto h-12 w-12" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true"><path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" /></svg></div>
                 <p className="text-lg font-semibold text-gray-200">Drag & Drop or Click to Upload</p>
                 <p className="text-sm text-gray-400">PDF, PNG, or JPG files are accepted</p>
             </label>
@@ -102,18 +102,18 @@ const AccountAnalysisCard: React.FC<{account: AnalyzedAccount, isOpen: boolean, 
     return (
         <div className="bg-gray-900/50 rounded-lg border border-gray-700/50 overflow-hidden">
             <button onClick={onToggle} className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-800/60 transition-colors duration-200">
-                <div className="flex-1 min-w-0"><p className="font-semibold text-gray-200 truncate">{account.creditorName}</p><p className="text-sm text-gray-400 font-mono">{account.accountNumber}</p></div>
+                <div className="flex-1 min-w-0"><p className="font-semibold text-foreground truncate">{account.creditorName}</p><p className="text-sm text-muted-foreground font-mono">{account.accountNumber}</p></div>
                 <div className="flex items-center space-x-4 ml-4"><p className={`font-bold text-lg ${scoreColor}`}>{score}/10</p><ChevronDownIcon className={`w-6 h-6 text-gray-400 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`} /></div>
             </button>
             {isOpen && (<div className="p-4 border-t border-gray-700/50 space-y-6 animate-fade-in-slow">
                 <div><h4 className="font-semibold text-gray-200 mb-1">Account Summary</h4><p className="text-gray-400 text-sm">{account.summary}</p></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-gray-800 p-3 rounded-lg space-y-2"><h4 className="font-semibold text-gray-300 mb-2 text-sm">Key Data</h4><div className="flex justify-between text-xs"><span className="text-gray-400">Amount:</span> <span className="font-mono text-gray-200">{typeof account.amount === 'number' ? `$${account.amount.toFixed(2)}` : account.amount || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-gray-400">Status:</span> <span className="font-mono text-gray-200">{account.accountStatus || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-gray-400">Date Opened:</span> <span className="font-mono text-gray-200">{account.dateOpened || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-gray-400">Date Reported:</span> <span className="font-mono text-gray-200">{account.dateReported || 'N/A'}</span></div></div>
-                    <div className="bg-gray-800 p-3 rounded-lg flex flex-col justify-center items-center"><h4 className="font-semibold text-gray-300 mb-2 text-sm">Dispute Strength</h4><div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden"><div className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${score >= 7 ? 'bg-green-500' : score >= 4 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${score * 10}%` }}></div></div></div>
+                    <div className="bg-gray-800 p-3 rounded-lg space-y-2"><h4 className="font-semibold text-foreground mb-2 text-sm">Key Data</h4><div className="flex justify-between text-xs"><span className="text-muted-foreground">Amount:</span> <span className="font-mono text-foreground font-medium">{typeof account.amount === 'number' ? `$${account.amount.toFixed(2)}` : account.amount || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-muted-foreground">Status:</span> <span className="font-mono text-foreground font-medium">{account.accountStatus || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-muted-foreground">Date Opened:</span> <span className="font-mono text-foreground font-medium">{account.dateOpened || 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-muted-foreground">Date Reported:</span> <span className="font-mono text-foreground font-medium">{account.dateReported || 'N/A'}</span></div></div>
+                    <div className="bg-gray-800 p-3 rounded-lg flex flex-col justify-center items-center"><h4 className="font-semibold text-foreground mb-2 text-sm">Dispute Strength</h4><div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden"><div className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${score >= 7 ? 'bg-green-500' : score >= 4 ? 'bg-yellow-500' : 'bg-red-500'}`} style={{ width: `${score * 10}%` }}></div></div></div>
                 </div>
-                {hasOpportunitiesOrIssues && (<div><h4 className="font-semibold text-gray-300 mb-2 text-sm">Opportunities &amp; Issues</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{opportunities?.goodwillLetter && <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2"><LightbulbIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /><p className="text-xs text-gray-300">Goodwill Letter Candidate</p></div>}{opportunities?.payForDelete && <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2"><LightbulbIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /><p className="text-xs text-gray-300">Pay-for-Delete Candidate</p></div>}{issues?.mixedFile && <div className="bg-red-900/40 p-3 rounded-lg flex items-center space-x-2"><ExclamationTriangleIcon className="w-5 h-5 text-red-400 flex-shrink-0" /><p className="text-xs text-gray-300">Potential Mixed File</p></div>}{issues?.identityTheft && <div className="bg-red-900/40 p-3 rounded-lg flex items-center space-x-2"><ExclamationTriangleIcon className="w-5 h-5 text-red-400 flex-shrink-0" /><p className="text-xs text-gray-300">Potential Identity Theft</p></div>}</div></div>)}
-                <div><h4 className="font-semibold text-gray-300 mb-2 text-sm">Potential Violations</h4><div className="space-y-3">{account.potentialViolations.length > 0 ? (account.potentialViolations.map((violation, index) => (<div key={`${violation.law}-${violation.violationCategory}-${index}`} className="bg-gray-800 p-3 rounded-lg flex items-start space-x-3"><ShieldCheckIcon className="w-5 h-5 text-cyan-400 flex-shrink-0 mt-0.5" /><div><p className="font-semibold text-gray-300 text-sm">{violation.violationCategory}<span className="ml-2 text-xs font-mono bg-gray-700 text-cyan-300 px-2 py-0.5 rounded-full">{violation.law}</span></p><p className="text-xs text-gray-400">{violation.description}</p>{violation.evidenceText && (<div className="mt-1 pt-1 border-t border-gray-700 flex items-start space-x-2 text-gray-500"><QuoteIcon className="w-3 h-3 flex-shrink-0 mt-0.5" /><p className="text-xs italic">"{violation.evidenceText}"</p></div>)}</div></div>))) : <p className="text-xs text-gray-500 p-2">No specific violations were identified for this account.</p>}</div></div>
-                {account.recommendedNextSteps?.length > 0 && (<div><h4 className="font-semibold text-gray-300 mb-2 text-sm">Recommended Next Steps</h4><div className="space-y-2 bg-gray-800 p-3 rounded-lg">{account.recommendedNextSteps.map((step, index) => (<div key={index} className="flex items-start space-x-2"><div className="mt-1 w-3 h-3 flex-shrink-0 text-cyan-400"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg></div><p className="text-gray-300 text-xs">{step}</p></div>))}</div></div>)}
+                {hasOpportunitiesOrIssues && (<div><h4 className="font-semibold text-foreground mb-2 text-sm">Opportunities &amp; Issues</h4><div className="grid grid-cols-1 md:grid-cols-2 gap-3">{opportunities?.goodwillLetter && <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2"><LightbulbIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /><p className="text-xs text-foreground">Goodwill Letter Candidate</p></div>}{opportunities?.payForDelete && <div className="bg-gray-800 p-3 rounded-lg flex items-center space-x-2"><LightbulbIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /><p className="text-xs text-foreground">Pay-for-Delete Candidate</p></div>}{issues?.mixedFile && <div className="bg-red-900/40 p-3 rounded-lg flex items-center space-x-2"><ExclamationTriangleIcon className="w-5 h-5 text-red-400 flex-shrink-0" /><p className="text-xs text-foreground">Potential Mixed File</p></div>}{issues?.identityTheft && <div className="bg-red-900/40 p-3 rounded-lg flex items-center space-x-2"><ExclamationTriangleIcon className="w-5 h-5 text-red-400 flex-shrink-0" /><p className="text-xs text-foreground">Potential Identity Theft</p></div>}</div></div>)}
+                <div><h4 className="font-semibold text-foreground mb-2 text-sm">Potential Violations</h4><div className="space-y-3">{account.potentialViolations.length > 0 ? (account.potentialViolations.map((violation, index) => (<div key={`${violation.law}-${violation.violationCategory}-${index}`} className="bg-gray-800 p-3 rounded-lg flex items-start space-x-3"><ShieldCheckIcon className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" /><div><p className="font-semibold text-gray-300 text-sm">{violation.violationCategory}<span className="ml-2 text-xs font-mono bg-gray-700 text-primary px-2 py-0.5 rounded-full">{violation.law}</span></p><p className="text-xs text-gray-400">{violation.description}</p>{violation.evidenceText && (<div className="mt-1 pt-1 border-t border-gray-700 flex items-start space-x-2 text-gray-500"><QuoteIcon className="w-3 h-3 flex-shrink-0 mt-0.5" /><p className="text-xs italic">"{violation.evidenceText}"</p></div>)}</div></div>))) : <p className="text-xs text-gray-500 p-2">No specific violations were identified for this account.</p>}</div></div>
+                {account.recommendedNextSteps?.length > 0 && (<div><h4 className="font-semibold text-foreground mb-2 text-sm">Recommended Next Steps</h4><div className="space-y-2 bg-gray-800 p-3 rounded-lg">{account.recommendedNextSteps.map((step, index) => (<div key={index} className="flex items-start space-x-2"><div className="mt-1 w-3 h-3 flex-shrink-0 text-primary"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"></path></svg></div><p className="text-foreground text-xs">{step}</p></div>))}</div></div>)}
             </div>)}
         </div>
     );
@@ -123,7 +123,7 @@ const AnalysisDisplay: React.FC<{result: AnalysisResult}> = ({ result }) => {
     const [openAccountId, setOpenAccountId] = useState<string | null>(result.analyzedAccounts?.[0]?.accountNumber || null);
     const handleToggle = (accountId: string) => { setOpenAccountId(openAccountId === accountId ? null : accountId); };
     return (<div className="space-y-6 animate-fade-in-slow">
-        <h3 className="text-xl font-bold text-cyan-300 border-b border-gray-700 pb-2">AI Analysis Results</h3>
+        <h3 className="text-xl font-bold text-primary border-b border-gray-700 pb-2">AI Analysis Results</h3>
         <div className="bg-gray-900/50 p-4 rounded-lg"><h4 className="font-semibold text-gray-200 mb-1">Global Summary</h4><p className="text-gray-400 text-sm">{result.globalSummary || 'No summary provided.'}</p></div>
         {result.analyzedAccounts?.length > 0 ? (<div className="space-y-3"><h4 className="font-semibold text-gray-200">Identified Accounts ({result.analyzedAccounts.length})</h4>{result.analyzedAccounts.map((account, index) => (<AccountAnalysisCard key={account.accountNumber || index} account={account} isOpen={openAccountId === account.accountNumber} onToggle={() => handleToggle(account.accountNumber)} />))}</div>) : (<p className="text-sm text-gray-500 text-center py-4">No specific negative accounts were identified by the AI.</p>)}
     </div>);
@@ -152,7 +152,7 @@ const LetterPackageDisplay: React.FC<{letterPackage: LetterPackage; handleDownlo
     return (
         <div className="space-y-4 animate-fade-in-slow">
             <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-cyan-300">Generated Letter Package</h3>
+                <h3 className="text-xl font-bold text-primary">Generated Letter Package</h3>
                 <button onClick={handleDownloadPackage} className="px-4 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-500 transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center space-x-2" title="Download All Letters"><DownloadIcon className="w-5 h-5" /><span>Download Package</span></button>
             </div>
             <div className="flex space-x-2 border-b border-gray-700 p-1">
@@ -177,15 +177,15 @@ const AIAgentSetup: React.FC<{onSetup: (info: TrackingInfo) => void}> = ({ onSet
     const handleSubmit = (e: React.FormEvent) => { e.preventDefault(); onSetup(info as TrackingInfo); };
     return (
         <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in-slow bg-gray-900/50 p-6 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-bold text-cyan-300">Activate AI Tracking Agent</h3>
-            <p className="text-sm text-gray-400">Answer a few questions to set up automated deadline tracking and reminders.</p>
+            <h3 className="text-xl font-bold text-primary">Activate AI Tracking Agent</h3>
+            <p className="text-sm text-muted-foreground">Answer a few questions to set up automated deadline tracking and reminders.</p>
             <div>
-                <label htmlFor="mailingDate" className="block text-sm font-medium text-gray-300 mb-1">1. What date were the letters mailed?</label>
+                <label htmlFor="mailingDate" className="block text-sm font-medium text-foreground mb-1">1. What date were the letters mailed?</label>
                 <input type="date" id="mailingDate" value={info.mailingDate} onChange={e => setInfo({...info, mailingDate: e.target.value})} className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-gray-200 focus:ring-cyan-500 focus:border-cyan-500" required />
             </div>
             <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">2. Were they sent via Certified Mail?</label>
-                <div className="flex items-center space-x-4"><label className="flex items-center"><input type="radio" name="isCertified" checked={info.isCertified === true} onChange={() => setInfo({...info, isCertified: true})} className="form-radio h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 focus:ring-cyan-500" /> <span className="ml-2 text-gray-300">Yes</span></label><label className="flex items-center"><input type="radio" name="isCertified" checked={info.isCertified === false} onChange={() => setInfo({...info, isCertified: false})} className="form-radio h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 focus:ring-cyan-500" /> <span className="ml-2 text-gray-300">No</span></label></div>
+                <div className="flex items-center space-x-4"><label className="flex items-center"><input type="radio" name="isCertified" checked={info.isCertified === true} onChange={() => setInfo({...info, isCertified: true})} className="form-radio h-4 w-4 text-primary bg-gray-700 border-gray-600 focus:ring-primary" /> <span className="ml-2 text-gray-300">Yes</span></label><label className="flex items-center"><input type="radio" name="isCertified" checked={info.isCertified === false} onChange={() => setInfo({...info, isCertified: false})} className="form-radio h-4 w-4 text-primary bg-gray-700 border-gray-600 focus:ring-primary" /> <span className="ml-2 text-gray-300">No</span></label></div>
             </div>
             {info.isCertified && <div className="animate-fade-in-slow">
                 <label htmlFor="trackingNumber" className="block text-sm font-medium text-gray-300 mb-1">Please enter the tracking number:</label>
@@ -193,7 +193,7 @@ const AIAgentSetup: React.FC<{onSetup: (info: TrackingInfo) => void}> = ({ onSet
             </div>}
              <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">3. Was a CFPB complaint filed?</label>
-                <div className="flex items-center space-x-4"><label className="flex items-center"><input type="radio" name="cfpbFiled" checked={info.cfpbFiled === true} onChange={() => setInfo({...info, cfpbFiled: true})} className="form-radio h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 focus:ring-cyan-500" /> <span className="ml-2 text-gray-300">Yes</span></label><label className="flex items-center"><input type="radio" name="cfpbFiled" checked={info.cfpbFiled === false} onChange={() => setInfo({...info, cfpbFiled: false})} className="form-radio h-4 w-4 text-cyan-600 bg-gray-700 border-gray-600 focus:ring-cyan-500" /> <span className="ml-2 text-gray-300">No</span></label></div>
+                <div className="flex items-center space-x-4"><label className="flex items-center"><input type="radio" name="cfpbFiled" checked={info.cfpbFiled === true} onChange={() => setInfo({...info, cfpbFiled: true})} className="form-radio h-4 w-4 text-primary bg-gray-700 border-gray-600 focus:ring-primary" /> <span className="ml-2 text-gray-300">Yes</span></label><label className="flex items-center"><input type="radio" name="cfpbFiled" checked={info.cfpbFiled === false} onChange={() => setInfo({...info, cfpbFiled: false})} className="form-radio h-4 w-4 text-primary bg-gray-700 border-gray-600 focus:ring-primary" /> <span className="ml-2 text-gray-300">No</span></label></div>
             </div>
             <button type="submit" className="w-full px-6 py-2 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-500 transition-all duration-200 transform hover:scale-105 active:scale-95 flex items-center justify-center">Activate Tracking</button>
         </form>
@@ -206,8 +206,8 @@ const TrackingDisplay: React.FC<{info: TrackingInfo}> = ({ info }) => {
         <div className="space-y-4 animate-fade-in-slow bg-gray-900/50 p-6 rounded-lg border border-gray-700">
              <h3 className="text-xl font-bold text-green-400">AI Tracking Agent is Active</h3>
              <div className="space-y-3">
-                <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-md"><CalendarIcon className="w-5 h-5 text-cyan-400"/><p className="text-sm text-gray-300">CRA Reinvestigation Deadline (30 days): <strong className="text-white">{addDays(info.mailingDate, 30)}</strong></p></div>
-                {info.cfpbFiled && <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-md"><CalendarIcon className="w-5 h-5 text-cyan-400"/><p className="text-sm text-gray-300">CFPB Response Deadline (15 days): <strong className="text-white">{addDays(info.mailingDate, 15)}</strong></p></div>}
+                <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-md"><CalendarIcon className="w-5 h-5 text-primary"/><p className="text-sm text-gray-300">CRA Reinvestigation Deadline (30 days): <strong className="text-white">{addDays(info.mailingDate, 30)}</strong></p></div>
+                {info.cfpbFiled && <div className="flex items-center space-x-3 bg-gray-800 p-3 rounded-md"><CalendarIcon className="w-5 h-5 text-primary"/><p className="text-sm text-gray-300">CFPB Response Deadline (15 days): <strong className="text-white">{addDays(info.mailingDate, 15)}</strong></p></div>}
              </div>
              <p className="text-xs text-gray-500 pt-2">The AI agent will now monitor these deadlines and can send reminders.</p>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
@@ -229,13 +229,13 @@ export const InteractiveStepContent: React.FC<InteractiveStepContentProps> = (pr
             case 1:
                  return (
                     <div className="text-center space-y-4 animate-fade-in-slow p-4">
-                        <h3 className="text-3xl font-bold text-white tracking-tight">Meet Your AI Credit Report Assistant</h3>
-                        <p className="text-lg text-gray-300 max-w-xl mx-auto">
+                        <h3 className="text-3xl font-bold text-foreground tracking-tight">Meet Your AI Credit Report Assistant</h3>
+                        <p className="text-lg text-foreground max-w-xl mx-auto">
                             Hello! I'm here to guide you through a secure, step-by-step process to analyze your credit report and supporting documents, identify potential errors and violations, and generate professional dispute letters to help repair your credit.
                         </p>
-                        <div className="bg-gray-900/50 p-4 rounded-lg mt-4 max-w-lg mx-auto">
-                            <p className="font-semibold text-cyan-400">Ready to start?</p>
-                            <p className="text-gray-400 text-sm">Click the "Let's Begin" button below to proceed to the first task: uploading your credit report (PDF preferred) or supporting documents.</p>
+                        <div className="bg-gradient-to-br from-lime-400/90 via-lime-300/80 to-green-300/70 border-2 border-lime-500 p-6 rounded-xl mt-4 max-w-lg mx-auto shadow-xl shadow-lime-400/30">
+                            <p className="font-bold text-gray-900 text-xl">Ready to start?</p>
+                            <p className="text-gray-800 text-sm mt-2 font-medium">Click the "Let's Begin" button below to proceed to the first task: uploading your credit report (PDF preferred) or supporting documents.</p>
                         </div>
                     </div>
                 );

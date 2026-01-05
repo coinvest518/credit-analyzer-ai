@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LogoIcon, MenuIcon, CloseIcon } from './icons/Icons';
 import { useAuth } from '../contexts/AuthContext';
 import { usePayment } from '../contexts/PaymentContext';
@@ -13,18 +14,30 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, onBlogClick, onHomeClick, showHomeButton = false }) => {
+  const navigate = useNavigate();
   const { currentUser, signOutUser } = useAuth();
   const { isPaid } = usePayment();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  
+  const handleHomeClick = () => {
+    if (onHomeClick) {
+      onHomeClick();
+    } else {
+      navigate('/');
+    }
+  };
 
   return (
     <header className="bg-gray-900/95 backdrop-blur-sm border-b border-gray-700/50 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           {/* Logo and Title */}
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+          <div 
+            onClick={handleHomeClick}
+            className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 cursor-pointer hover:opacity-80 transition-opacity"
+          >
             <LogoIcon className="w-6 h-6 sm:w-8 sm:h-8 text-cyan-400 flex-shrink-0" />
             <h1 className="text-sm sm:text-lg md:text-xl lg:text-2xl font-bold text-white tracking-tight truncate">
               AI Credit Report Analyzer
@@ -33,21 +46,12 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-3">
-            {showHomeButton ? (
-              <button
-                onClick={onHomeClick}
-                className="px-3 py-2 text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-              >
-                🏠 Home
-              </button>
-            ) : (
-              <button
-                onClick={onBlogClick}
-                className="px-3 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
-              >
-                Blog
-              </button>
-            )}
+            <button
+              onClick={onBlogClick}
+              className="px-3 py-2 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+            >
+              Blog
+            </button>
             <BuyMeACoffeeButton className="px-3 py-2 text-sm font-medium rounded-lg" />
             <button
               onClick={onUpgradeClick}
@@ -94,27 +98,15 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
         {isMobileMenuOpen && (
           <div className="md:hidden mt-4 pb-4 border-t border-gray-700/50 pt-4">
             <div className="flex flex-col space-y-3">
-              {showHomeButton ? (
-                <button
-                  onClick={() => {
-                    onHomeClick?.();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-medium bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition-colors"
-                >
-                  🏠 Home
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    onBlogClick?.();
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full text-left px-4 py-3 text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors"
-                >
-                  📝 Blog
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  onBlogClick?.();
+                  setIsMobileMenuOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+              >
+                Blog
+              </button>
               
               <div className="px-4">
                 <BuyMeACoffeeButton className="w-full justify-center px-4 py-3 text-sm font-medium rounded-lg" />

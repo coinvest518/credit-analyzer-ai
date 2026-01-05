@@ -12,7 +12,7 @@ const TaskStatusIcon: React.FC<{status: 'completed' | 'in-progress' | 'pending'}
         case 'completed':
             return <CheckIcon className="w-5 h-5 text-green-400" />;
         case 'in-progress':
-            return <SpinnerIcon className="w-5 h-5 text-cyan-400 animate-spin" />;
+            return <SpinnerIcon className="w-5 h-5 text-primary animate-spin" />;
         case 'pending':
             return <div className="w-5 h-5 flex items-center justify-center"><div className="w-2 h-2 rounded-full bg-gray-500"></div></div>;
     }

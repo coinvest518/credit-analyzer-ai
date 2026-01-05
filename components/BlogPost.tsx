@@ -1,6 +1,4 @@
 import React, { useEffect } from 'react';
-import { Header } from './Header';
-import { Footer } from './Footer';
 import { BlogPost as BlogPostType } from '../blogData';
 
 interface BlogPostProps {
@@ -15,9 +13,7 @@ export const BlogPost: React.FC<BlogPostProps> = ({ post, onBackClick }) => {
 
   return (
     <>
-      <div className="min-h-screen bg-white">
-        <Header onHomeClick={onBackClick} showHomeButton={true} />
-        
+      <div className="bg-white">
         <main className="max-w-3xl mx-auto px-6 py-16">
           <button 
             onClick={onBackClick}
@@ -66,8 +62,6 @@ export const BlogPost: React.FC<BlogPostProps> = ({ post, onBackClick }) => {
             </button>
           </div>
         </main>
-
-        <Footer />
       </div>
     </>
   );

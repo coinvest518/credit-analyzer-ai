@@ -36,37 +36,39 @@ interface StepDetailProps {
   trackingInfo: TrackingInfo | null;
   handleSetupTracking: (info: TrackingInfo) => void;
   handleDownloadAttempt: () => boolean;
+  isPaid: boolean;
+  currentUser: any;
 }
 
 
 export const StepDetail: React.FC<StepDetailProps> = (props) => {
-  const { step, onNext, onPrev, isFirst, isLast, isStepActionComplete } = props;
+  const { step, onNext, onPrev, isFirst, isLast, isStepActionComplete, isPaid, currentUser } = props;
   
   return (
-    <div key={step.id} className="bg-gray-800/50 border border-gray-700 rounded-xl p-6 md:p-8 shadow-2xl shadow-gray-900/50 animate-fade-in">
+    <div key={step.id} className="bg-gradient-to-br from-gray-50 via-white to-lime-50 border-2 border-lime-200 rounded-xl p-6 md:p-8 shadow-2xl shadow-lime-400/20 animate-fade-in">
       <div className="flex items-center space-x-4 mb-6">
-        <div className="bg-gray-700 p-3 rounded-lg">
-          <step.icon className="w-8 h-8 text-cyan-400" />
+        <div className="bg-gradient-to-br from-lime-400 to-lime-500 border-2 border-lime-600 p-3 rounded-lg shadow-lg shadow-lime-400/40">
+          <step.icon className="w-8 h-8 text-white" />
         </div>
         <div>
-          <span className="text-sm font-semibold text-cyan-400">Step {step.id}</span>
-          <h2 className="text-2xl md:text-3xl font-bold text-white">{step.title}</h2>
+          <span className="text-sm font-semibold text-lime-600">Step {step.id}</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">{step.title}</h2>
         </div>
       </div>
 
       <div className="space-y-4 mb-8">
         {step.details.map((detail, index) => (
             <div key={index} className="flex items-start">
-                <svg className="w-5 h-5 text-cyan-400 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg className="w-5 h-5 text-lime-500 mr-3 mt-1 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <div>
-                    <h4 className="font-semibold text-gray-100">{detail.title}</h4>
-                    <p className="text-gray-400">{detail.text}</p>
+                    <h4 className="font-semibold text-gray-900">{detail.title}</h4>
+                    <p className="text-gray-700">{detail.text}</p>
                 </div>
             </div>
         ))}
       </div>
 
-      <div className="my-8 border-t border-dashed border-gray-600"></div>
+      <div className="my-8 border-t border-dashed border-lime-300"></div>
 
       {/* Interactive Content Area */}
       <InteractiveStepContent {...props} />
@@ -84,10 +86,12 @@ export const StepDetail: React.FC<StepDetailProps> = (props) => {
         <button
           onClick={onNext}
           disabled={isLast || !isStepActionComplete}
-          className="px-6 py-2 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-500 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+          className="px-6 py-2 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 transition-all duration-200 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
           aria-label="Next Step"
         >
-          {step.id === 1 ? "Let's Begin" : 'Next Step'}
+          {step.id === 1 ? "Let's Begin" : 
+           step.id === 3 && (!currentUser || !isPaid) ? "Unlock Full Report" :
+           'Next Step'}
         </button>
       </div>
        <style>{`
