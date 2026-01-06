@@ -27,6 +27,10 @@ export const Footer: React.FC = () => {
             <a href="https://fdwa.site" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors">Consulting</a>
             <a href="https://cal.com/bookme-daniel" target="_blank" rel="noopener noreferrer" className="px-4 py-2 text-sm font-medium bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition-colors">Book Call</a>
           </div>
+          <div className="flex space-x-4">
+            <a href="/terms" className="text-gray-500 hover:text-gray-300 text-xs transition-colors">Terms of Service</a>
+            <a href="/privacy" className="text-gray-500 hover:text-gray-300 text-xs transition-colors">Privacy Policy</a>
+          </div>
           <p className="text-gray-400 text-sm">&copy; 2024 AI Credit Report Analyzer. All rights reserved.</p>
           <BuyMeACoffeeButton />
         </div>

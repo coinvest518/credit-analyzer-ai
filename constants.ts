@@ -63,6 +63,12 @@ export const workflowSteps: WorkflowStep[] = [
       { title: 'Step-by-Step Action Plan', text: 'I will provide you with a step-by-step action plan to help you address the identified issues.' },
       { title: 'Downloadable Report', text: 'You will be able to download your complete analysis and action plan for your records.' },
     ],
+    processingTasks: [
+      { name: 'Synthesizing report data...' },
+      { name: 'Generating narrative summary...' },
+      { name: 'formatting markdown output...' },
+      { name: 'Preparing action plan...' },
+    ]
   },
   {
     id: 5,
@@ -75,6 +81,12 @@ export const workflowSteps: WorkflowStep[] = [
       { title: 'Creditor Letters', text: 'Draft letters to original creditors to dispute inaccurate information or to request a goodwill deletion.' },
       { title: 'Downloadable Package', text: 'All generated letters will be available for you to download and send.' },
     ],
+    processingTasks: [
+      { name: 'Initializing legal engine...' },
+      { name: 'Drafting dispute letters...' },
+      { name: 'Verifying law citations...' },
+      { name: 'Consolidating package...' },
+    ]
   },
   {
     id: 6,

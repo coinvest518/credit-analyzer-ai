@@ -6,6 +6,7 @@ import { WorkflowStepper } from './components/WorkflowStepper';
 import { StepDetail } from './components/StepDetail';
 import { AuthModal } from './components/AuthModal';
 import { PaymentModal } from './components/PaymentModal';
+import { ProcessingModal } from './components/ProcessingModal';
 import { Footer } from './components/Footer';
 import { EnvCheck } from './components/EnvCheck';
 import { BlogAdmin } from './components/BlogAdmin';
@@ -139,7 +140,7 @@ const App: React.FC = () => {
 
   const handleFileUpload = async (file: File) => {
     const tasks = activeStepData?.processingTasks || [];
-    await runProcessingSequence(tasks);
+    runProcessingSequence(tasks);
     
     const reader = new FileReader();
     reader.onloadend = async () => {
@@ -194,7 +195,7 @@ const App: React.FC = () => {
     setAnalysisResult(null);
 
     const tasks = activeStepData?.processingTasks || [];
-    await runProcessingSequence(tasks);
+    runProcessingSequence(tasks);
     
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
@@ -274,7 +275,12 @@ Return ONLY valid JSON.`;
 
   const handleGenerateReport = async () => {
     if (!analysisResult) { setError("Analysis data is missing."); return; }
-    setIsLoading(true); setError(null);
+    
+    // Start processing visualization
+    const tasks = activeStepData?.processingTasks || [];
+    runProcessingSequence(tasks);
+    setError(null);
+
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
         
@@ -295,12 +301,20 @@ For each account, explain violations referencing relevant laws (FCRA, FDCPA) and
         
         const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
         setSummaryReport(String(response.choices[0].message.content || ''));
-    } catch (e: any) { setError(`Report generation failed: ${e.message}`); console.error(e); } finally { setIsLoading(false); }
+    } catch (e: any) { setError(`Report generation failed: ${e.message}`); console.error(e); } finally { 
+        setIsLoading(false); 
+        setProcessingTasks([]);
+    }
   };
 
   const handleGenerateActionPlan = async () => {
     if (!analysisResult || !summaryReport) { setError("Analysis or report data is missing."); return; }
-    setIsLoading(true); setError(null);
+    
+    // Start processing visualization
+    const tasks = activeStepData?.processingTasks || [];
+    runProcessingSequence(tasks);
+    setError(null);
+
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
         
@@ -324,12 +338,20 @@ Use markdown formatting. Be specific and actionable.`;
         const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
         setActionPlan(String(response.choices[0].message.content || ''));
         setCompletedStep(Math.max(completedStep, 4));
-    } catch (e: any) { setError(`Action plan generation failed: ${e.message}`); console.error(e); } finally { setIsLoading(false); }
+    } catch (e: any) { setError(`Action plan generation failed: ${e.message}`); console.error(e); } finally { 
+        setIsLoading(false); 
+        setProcessingTasks([]);
+    }
   };
 
   const handleGenerateLetterPackage = async () => {
     if (!analysisResult || !actionPlan) { setError("Analysis and action plan must be generated first."); return; }
-    setIsLoading(true); setError(null);
+    
+    // Start processing visualization
+    const tasks = activeStepData?.processingTasks || [];
+    runProcessingSequence(tasks);
+    setError(null);
+
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
         
@@ -366,7 +388,10 @@ Return ONLY valid JSON with complete, professional letters.`;
         setLetterPackage(generated);
         setCompletedStep(Math.max(completedStep, 5));
 
-    } catch (e: any) { setError(`Letter package generation failed: ${e.message}`); console.error(e); } finally { setIsLoading(false); }
+    } catch (e: any) { setError(`Letter package generation failed: ${e.message}`); console.error(e); } finally { 
+        setIsLoading(false); 
+        setProcessingTasks([]);
+    }
   }
 
   const handleSetupTracking = (info: TrackingInfo) => {
@@ -454,6 +479,11 @@ Return ONLY valid JSON with complete, professional letters.`;
         <PaymentModal 
           isOpen={showPaymentModal} 
           onClose={() => setShowPaymentModal(false)} 
+        />
+        <ProcessingModal 
+          isOpen={isLoading && processingTasks.length > 0}
+          tasks={processingTasks}
+          currentTaskIndex={currentTaskIndex}
         />
         <Footer />
         <EnvCheck />
