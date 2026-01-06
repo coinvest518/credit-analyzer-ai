@@ -133,7 +133,7 @@ const App: React.FC = () => {
                 clearInterval(interval);
                 resolve();
             }
-        }, 800);
+        }, 150);
     });
   };
 
@@ -277,7 +277,22 @@ Return ONLY valid JSON.`;
     setIsLoading(true); setError(null);
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
-        const prompt = `You are a consumer law expert. Based on the following structured analysis of a credit report that contains multiple accounts, generate a single, consolidated narrative summary report. The report should be easy for a layperson to understand. Start with the 'globalSummary', then, for each account in the 'analyzedAccounts' array, create a section. In each section, explain the potential violations in detail, referencing the relevant law (e.g., FCRA, FDCPA) and explaining *why* it's a violation and what it means for the consumer. Analysis Data: ${JSON.stringify(analysisResult, null, 2)}. Generate the report now. Use markdown for formatting (e.g., # Heading, ## Account Heading, - List item, **bold**).`;
+        
+        // Create compact account list
+        const accountList = analysisResult.analyzedAccounts?.map(acc => 
+          `${acc.creditorName} (${acc.accountNumber})`).join(', ') || 'No accounts';
+        const violationCount = analysisResult.analyzedAccounts?.reduce((sum, acc) => 
+          sum + acc.potentialViolations.length, 0) || 0;
+        
+        const prompt = `You are a consumer law expert. Generate a consolidated narrative summary report for a layperson.
+
+Global Summary: ${analysisResult.globalSummary}
+
+Accounts (${analysisResult.analyzedAccounts?.length || 0}): ${accountList}
+Total Violations Found: ${violationCount}
+
+For each account, explain violations referencing relevant laws (FCRA, FDCPA) and why it matters to the consumer. Use markdown formatting (# Heading, ## Account, - List, **bold**).`;
+        
         const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
         setSummaryReport(String(response.choices[0].message.content || ''));
     } catch (e: any) { setError(`Report generation failed: ${e.message}`); console.error(e); } finally { setIsLoading(false); }
@@ -288,7 +303,24 @@ Return ONLY valid JSON.`;
     setIsLoading(true); setError(null);
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
-        const prompt = `Based on the provided multi-account analysis and summary report, create a single, clear, step-by-step action plan for the consumer. The plan should be prioritized and actionable. Consolidate actions where possible (e.g., "Draft dispute letters for all identified accounts"). For each step, explain what the user needs to do. For example, "1. Draft a Dispute Letter addressing all accounts mentioned in the report," "2. Send each letter via Certified Mail to the relevant bureau," "3. Calendar a 30-day follow-up for each dispute." Analysis Data: ${JSON.stringify(analysisResult, null, 2)}. Summary Report: ${summaryReport}. Generate the action plan now using markdown.`;
+        
+        // Compact data for prompt
+        const accountCount = analysisResult.analyzedAccounts?.length || 0;
+        const accountNames = analysisResult.analyzedAccounts?.map(a => a.creditorName).slice(0, 5).join(', ') || 'accounts';
+        const hasCollections = analysisResult.analyzedAccounts?.some(a => a.accountStatus?.toLowerCase().includes('collection'));
+        
+        const prompt = `Create a prioritized, step-by-step action plan for a consumer with ${accountCount} problematic credit accounts.
+
+Accounts include: ${accountNames}${accountCount > 5 ? ' and others' : ''}.
+Collection accounts: ${hasCollections ? 'Yes' : 'No'}
+
+Consolidate actions (e.g., "Draft dispute letters for all accounts"). Explain each step clearly:
+1. Draft dispute letters
+2. Send via Certified Mail
+3. Calendar 30-day follow-ups
+
+Use markdown formatting. Be specific and actionable.`;
+        
         const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
         setActionPlan(String(response.choices[0].message.content || ''));
         setCompletedStep(Math.max(completedStep, 4));
@@ -298,31 +330,39 @@ Return ONLY valid JSON.`;
   const handleGenerateLetterPackage = async () => {
     if (!analysisResult || !actionPlan) { setError("Analysis and action plan must be generated first."); return; }
     setIsLoading(true); setError(null);
-    const generated: LetterPackage = {};
     try {
         const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
-        const analysisData = JSON.stringify(analysisResult, null, 2);
-
-        // 1. Credit Bureau Letter (FCRA)
-        let prompt = `Based on the credit analysis data, generate a formal dispute letter to the credit bureaus (e.g., Experian, TransUnion, Equifax). The letter must comply with FCRA Section 611. For EACH account in 'analyzedAccounts', create a distinct section demanding a reinvestigation and deletion of the inaccurate item. Reference specific account numbers and creditors. Analysis Data: ${analysisData}. Generate the letter now. Include placeholders like [Your Name], [Your Address], and [Date].`;
-        let response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        generated.creditBureau = String(response.choices[0].message.content || '');
-
-        // 2. Debt Collector Letter (FDCPA)
-        prompt = `Based on the credit analysis data, generate a formal debt validation letter to a debt collector under FDCPA Section 809. The letter should state that the consumer refuses to pay until the debt is validated. It must demand proof of the debt and cease all collection activities until validation is provided. Reference the relevant account(s). Analysis Data: ${analysisData}. Generate the letter now. Include placeholders.`;
-        response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        generated.debtCollector = String(response.choices[0].message.content || '');
         
-        // 3. Creditor Letter
-        prompt = `Based on the credit analysis data, generate a direct dispute or goodwill letter to the original creditor. For direct disputes, point out the specific billing error or inaccuracy. For goodwill candidates, politely request a "goodwill deletion" of a late payment, acknowledging past issues but highlighting a good payment history otherwise. Select the most appropriate tone based on the analysis. Analysis Data: ${analysisData}. Generate the letter now. Include placeholders.`;
-        response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        generated.creditor = String(response.choices[0].message.content || '');
+        // Create compact summary of accounts for prompt
+        const accountSummary = analysisResult.analyzedAccounts?.map(acc => 
+          `${acc.creditorName} (${acc.accountNumber}): ${acc.accountStatus}, Amount: $${acc.amount}, Violations: ${acc.potentialViolations.map(v => v.law).join(', ')}`
+        ).join('\n') || 'No accounts';
 
-        // 4. CFPB Complaint Letter
-        prompt = `Based on the credit analysis data, draft a formal complaint summary to be filed with the Consumer Financial Protection Bureau (CFPB). This should be a concise summary of the issue, outlining the failure of the credit bureau or furnisher to comply with the FCRA after a dispute was sent. Clearly state the desired resolution (e.g., "Deletion of the inaccurate account"). Analysis Data: ${analysisData}. Generate the complaint summary now.`;
-        response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        generated.cfpb = String(response.choices[0].message.content || '');
+        // Generate ALL 4 letters in ONE API call with JSON response
+        const prompt = `You are a consumer law expert. Generate ALL 4 dispute letters based on this credit analysis.
 
+Accounts:
+${accountSummary}
+
+Global Summary: ${analysisResult.globalSummary}
+
+Generate a JSON response with ALL 4 letters:
+{
+  "creditBureau": "Formal FCRA Section 611 dispute letter to credit bureaus (Experian, TransUnion, Equifax). For EACH account, demand reinvestigation and deletion. Include placeholders [Your Name], [Your Address], [Date].",
+  "debtCollector": "FDCPA Section 809 debt validation letter demanding proof and cease of collection activities. Include placeholders.",
+  "creditor": "Direct dispute or goodwill letter to original creditor. For disputes, cite billing errors. For goodwill, request deletion politely. Include placeholders.",
+  "cfpb": "CFPB complaint summary outlining FCRA non-compliance and demanding account deletion. Include placeholders."
+}
+
+Return ONLY valid JSON with complete, professional letters.`;
+
+        const response = await client.chat.complete({ 
+          model: 'mistral-large-latest', 
+          messages: [{ role: 'user', content: prompt }],
+          responseFormat: { type: 'json_object' }
+        });
+        
+        const generated = JSON.parse(String(response.choices[0].message.content || '{}'));
         setLetterPackage(generated);
         setCompletedStep(Math.max(completedStep, 5));
 

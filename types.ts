@@ -22,6 +22,7 @@ export interface UploadedFile {
     name: string;
     type: string;
     content: string; // base64 encoded
+    url?: string; // Firebase Storage URL (optional)
 }
 
 export type ViolationLaw = 'FCRA' | 'FDCPA' | 'TCPA' | 'OTHER';
