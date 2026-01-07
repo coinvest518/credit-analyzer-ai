@@ -27,13 +27,12 @@ const TrueplayWidget: React.FC = () => {
 
   return (
     <>
-      {/* iframe required by Enable3 widget */}
+      {/* iframe required by Enable3 widget - let Enable3 control visibility */}
       <iframe 
         id="fnc-widget" 
         frameBorder={0} 
         allow="clipboard-write;web-share"
         title="Enable3 Widget"
-        style={{ display: 'none' }}
       />
 
       {/* Floating button to open widget */}
