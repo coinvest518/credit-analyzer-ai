@@ -112,3 +112,10 @@ export const workflowSteps: WorkflowStep[] = [
     ],
   },
 ];
+
+// Trueplay / Enable3 widget configuration
+// Set these via environment variables in production (Vite: VITE_TRUEPLAY_WIDGET_ID, VITE_TRUEPLAY_AUTORUN, VITE_TRUEPLAY_API_KEY)
+export const TRUEPLAY_WIDGET_ID = import.meta.env.VITE_TRUEPLAY_WIDGET_ID || '10494';
+export const TRUEPLAY_AUTORUN = import.meta.env.VITE_TRUEPLAY_AUTORUN === 'true' ? true : false;
+// API key should be used server-side for integration calls. Frontend exposure is not recommended.
+export const TRUEPLAY_API_KEY = import.meta.env.VITE_TRUEPLAY_API_KEY || '';

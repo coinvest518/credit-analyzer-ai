@@ -82,16 +82,88 @@ npm run dev
 ## Deployment
 
 ### Vercel (Recommended)
-```bash
-npm install -g vercel
-vercel
-```
+1. Push your code to GitHub
+2. Connect your repo to Vercel
+3. Set environment variables in Vercel dashboard:
+   - `TRUEPLAY_API_KEY` (server-side API key for Enable3 integration)
+   - All other env vars from `.env.local`
+4. Deploy
+
+The Enable3 widget will work automatically using Vercel's serverless functions.
 
 ### Netlify
 ```bash
 npm run build
 # Upload dist/ folder to Netlify
 ```
+
+Note: For Netlify, you'll need to set up serverless functions separately or use a different approach for the Enable3 API calls.
+
+## Trueplay / Enable3 local proxy
+The Trueplay/Enable3 integration requires `X-API-KEY` for backend endpoints and **server IP whitelisting** for security.
+
+### Important: IP Whitelisting Required
+Enable3 validates requests based on the **server IP address**, not the domain. You must whitelist your server IPs in the Trueplay Admin panel.
+
+### Local Development Setup
+
+1. **Find your public IP address:**
+   ```bash
+   # Windows PowerShell
+   (Invoke-WebRequest -Uri "https://api.ipify.org").Content
+   
+   # Or visit: https://whatismyipaddress.com/
+   ```
+
+2. **Whitelist your IP in Enable3 Admin:**
+   - Log in to https://app.enable3.io
+   - Go to Admin Panel → Integration Settings → IP Whitelist
+   - Add your public IP address
+   - Wait ~5 minutes for changes to apply
+
+3. **Add API key to `.env.local`:**
+
+```env
+TRUEPLAY_API_KEY=7f2fe04d-cdf8-4b96-9fa0-c14c0bb1e4ef
+```
+
+4. **Start both servers:**
+
+```bash
+npm run dev:all
+```
+
+### Vercel Deployment
+
+**Important:** Vercel uses dynamic IP addresses, which makes IP whitelisting challenging. You have two options:
+
+**Option A: Contact Enable3 Support (Recommended)**
+- Request to whitelist Vercel's IP ranges or disable IP restrictions for your operator
+- Vercel IPs: https://vercel.com/docs/concepts/edge-network/overview
+
+**Option B: Use a Static IP Proxy**
+- Deploy a small proxy service with a static IP (e.g., on AWS EC2, DigitalOcean, Railway)
+- Whitelist that static IP in Enable3 Admin
+- Point your Vercel function to call this proxy instead of Enable3 directly
+
+### Testing
+
+After whitelisting your IP and setting the API key:
+
+1. Open http://localhost:3000
+2. Click the "🎮 Play & Earn" button
+3. Widget should load in a modal overlay
+
+**If you get 403 errors:**
+- Verify your API key is correct
+- Confirm your public IP is whitelisted in Enable3 Admin
+- Wait 5 minutes after adding IP to whitelist
+- Check server logs for detailed error messages
+
+Notes:
+- The proxy listens on port `3001` by default
+- Widget opens in a modal overlay with close button
+- User IDs are automatically generated (can integrate with Firebase auth later)
 
 ## Project Structure
 

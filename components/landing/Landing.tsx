@@ -4,6 +4,7 @@ import FeaturesSection from "./FeaturesSection";
 import DashboardPreview from "./DashboardPreview";
 import CTASection from "./CTASection";
 import Footer from "./Footer";
+import TrueplayWidget from "../TrueplayWidget";
 import { BlogList } from "../BlogList";
 import { blogPosts } from "../../blogData";
 import { Toaster } from "@/components/ui/toaster";
@@ -79,6 +80,7 @@ const Landing = () => {
             <CTASection />
           </main>
           <Footer />
+          <TrueplayWidget />
         </div>
       </TooltipProvider>
     </QueryClientProvider>
