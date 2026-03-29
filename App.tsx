@@ -16,6 +16,8 @@ import { workflowSteps } from './constants';
 import { storage, db } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import DisputeTracker from './components/DisputeTracker';
+import type { Dispute } from './components/DisputeTracker';
 import type { UploadedFile, AnalysisResult, ProcessingTask, LetterPackage, TrackingInfo } from './types';
 
 const App: React.FC = () => {
@@ -43,6 +45,9 @@ const App: React.FC = () => {
 
   // State for Step 5
   const [trackingInfo, setTrackingInfo] = useState<TrackingInfo | null>(null);
+
+  // Dispute tracker — auto-populated when letters are generated
+  const [autoDisputes, setAutoDisputes] = useState<Omit<Dispute, 'id' | 'createdAt'>[]>([]);
 
   // State for processing visualization
   const [processingTasks, setProcessingTasks] = useState<ProcessingTask[]>([]);
@@ -388,6 +393,20 @@ Return ONLY valid JSON with complete, professional letters.`;
         setLetterPackage(generated);
         setCompletedStep(Math.max(completedStep, 5));
 
+        // Auto-create dispute tracking entries for each letter type generated
+        const today = new Date().toISOString().split('T')[0];
+        const addDays = (d: string, n: number) => { const dt = new Date(d); dt.setDate(dt.getDate() + n); return dt.toISOString().split('T')[0]; };
+        const newDisputes: Omit<Dispute, 'id' | 'createdAt'>[] = [];
+        if (generated.creditBureau) {
+          (['TransUnion', 'Equifax', 'Experian'] as const).forEach(bureau => {
+            newDisputes.push({ bureau, accountName: 'Credit Bureau Dispute', letterType: 'Credit Bureau', sentDate: today, deadlineDate: addDays(today, 30), status: 'pending' });
+          });
+        }
+        if (generated.debtCollector) newDisputes.push({ bureau: 'Debt Collector', accountName: 'Debt Collector Dispute', letterType: 'Debt Collector', sentDate: today, deadlineDate: addDays(today, 30), status: 'pending' });
+        if (generated.creditor)      newDisputes.push({ bureau: 'Creditor',       accountName: 'Creditor Dispute',        letterType: 'Creditor',       sentDate: today, deadlineDate: addDays(today, 30), status: 'pending' });
+        if (generated.cfpb)          newDisputes.push({ bureau: 'CFPB',           accountName: 'CFPB Complaint',          letterType: 'CFPB',           sentDate: today, deadlineDate: addDays(today, 30), status: 'pending' });
+        if (newDisputes.length) setAutoDisputes(newDisputes);
+
     } catch (e: any) { setError(`Letter package generation failed: ${e.message}`); console.error(e); } finally { 
         setIsLoading(false); 
         setProcessingTasks([]);
@@ -442,8 +461,15 @@ Return ONLY valid JSON with complete, professional letters.`;
             </div>
             <div className="lg:col-span-3">
               {error && (<div className="bg-red-900/50 border border-red-700 text-red-300 px-3 py-2 sm:px-4 sm:py-3 rounded-lg mb-4 sm:mb-6 text-sm sm:text-base" role="alert"><strong className="font-bold">Error: </strong><span className="block sm:inline">{error}</span></div>)}
+              {/* Step 6 — Dispute Tracker (shown alongside StepDetail) */}
+              {activeStep === 6 && (
+                <div className="mb-6">
+                  <DisputeTracker autoAdd={autoDisputes} />
+                </div>
+              )}
+
               {activeStepData && (
-                <StepDetail 
+                <StepDetail
                   step={activeStepData} onNext={handleNext} onPrev={handlePrev} isFirst={activeStep === 1} isLast={activeStep === workflowSteps.length} isStepActionComplete={isStepActionComplete(activeStep)}
                   isLoading={isLoading} 
                   uploadedFile={uploadedFile} 

@@ -1,91 +1,109 @@
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-const benefits = [
-  "Free credit report analysis",
-  "AI-generated dispute letters",
-  "Track your score improvements",
-  "Cancel anytime, no commitment",
-];
 
 const CTASection = () => {
   const navigate = useNavigate();
   return (
-    <section id="pricing" className="py-24 bg-slate-900 text-white relative overflow-hidden">
-      {/* Background pattern */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-0 left-0 w-full h-full" 
-          style={{
-            backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
-            backgroundSize: '40px 40px'
-          }}
-        />
-      </div>
+    <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }}
+      />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6">
-              Ready to Take Control of{" "}
-              <span className="text-primary">Your Credit?</span>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-5">
+              Ready to Start{" "}
+              <span className="text-gradient">Disputing?</span>
             </h2>
-            <p className="text-lg text-slate-300 mb-8 max-w-2xl mx-auto">
-              Join over 50,000 users who have improved their credit scores with DisputeAI. 
-              Start your free analysis today and see what items you can dispute.
+            <p className="text-lg text-slate-300 mb-10 max-w-xl mx-auto">
+              Upload your credit report and let the AI find everything worth disputing. Takes less than 5 minutes.
             </p>
           </motion.div>
 
-          {/* Benefits list */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ delay: 0.2 }}
-            className="flex flex-wrap justify-center gap-4 mb-10"
+            transition={{ delay: 0.15 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
           >
-            {benefits.map((benefit, index) => (
-              <div
-                key={index}
-                className="flex items-center gap-2 bg-background/10 rounded-full px-4 py-2"
-              >
-                <CheckCircle2 className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium">{benefit}</span>
-              </div>
-            ))}
-          </motion.div>
-
-          {/* CTA Button */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-          >
-            <Button 
-              size="lg" 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-lg px-8 py-6 shadow-glow"
+            <Button
+              size="lg"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-base px-8"
               onClick={() => navigate('/app')}
             >
-              Get Your Free Analysis
+              Start Free Analysis
               <ArrowRight className="w-5 h-5" />
             </Button>
-            <div className="flex flex-col items-center gap-4 mt-4">
-              <p className="text-sm text-slate-400">
-                No credit card required • Takes 2 minutes
-              </p>
-              <button 
-                onClick={() => navigate('/pricing')}
-                className="text-sm text-slate-300 hover:text-white underline underline-offset-4"
-              >
-                View all pricing plans
-              </button>
-            </div>
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10 gap-2 text-base px-8"
+              onClick={() => window.open('https://cal.com/bookme-daniel', '_blank')}
+            >
+              Book a Consultation
+              <ExternalLink className="w-4 h-4" />
+            </Button>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+            className="flex flex-wrap justify-center gap-x-8 gap-y-2 mt-8 text-sm text-slate-400"
+          >
+            <span>✓ Free report analysis</span>
+            <span>✓ No credit card required</span>
+            <span>✓ Results in minutes</span>
+            <span>✓ Pro plans from $9.99/mo</span>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.4 }}
+            className="mt-10 pt-8 border-t border-white/10 flex flex-wrap justify-center gap-6"
+          >
+            <a
+              href="https://linktr.ee/omniai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
+            >
+              All Links <ExternalLink className="w-3 h-3" />
+            </a>
+            <a
+              href="https://buymeacoffee.com/coinvest"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-400 hover:text-white text-sm flex items-center gap-1 transition-colors"
+            >
+              Digital Store <ExternalLink className="w-3 h-3" />
+            </a>
+            <button
+              onClick={() => navigate('/pricing')}
+              className="text-slate-400 hover:text-white text-sm transition-colors"
+            >
+              View Pricing
+            </button>
+            <button
+              onClick={() => navigate('/blog')}
+              className="text-slate-400 hover:text-white text-sm transition-colors"
+            >
+              Blog
+            </button>
           </motion.div>
         </div>
       </div>
