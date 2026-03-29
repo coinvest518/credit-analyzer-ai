@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LogoIcon } from './icons/Icons';
 
@@ -8,11 +8,18 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail, loading } = useAuth();
+  const { signInWithGoogle, signInWithEmail, signUpWithEmail, loading, currentUser } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+
+  // Auto-close when auth succeeds
+  useEffect(() => {
+    if (isOpen && currentUser) {
+      onClose();
+    }
+  }, [currentUser, isOpen]);
 
   if (!isOpen) return null;
 
@@ -32,11 +39,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleGoogleSignIn = async () => {
+    setError('');
     try {
       await signInWithGoogle();
-      onClose();
+      // onClose is handled by the useEffect above when currentUser is set
     } catch (error: any) {
-      setError(error.message);
+      if (error.code === 'auth/popup-blocked') {
+        setError('Popup was blocked. Please allow popups for this site and try again.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google sign-in. Please use email/password or contact support.');
+      } else {
+        setError(error.message || 'Google sign-in failed. Please try again.');
+      }
     }
   };
 

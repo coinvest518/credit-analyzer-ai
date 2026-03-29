@@ -6,9 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "start:server": "node server/index.js",
-    "dev:all": "concurrently \"npm run start:server\" \"npm run dev\""
+    "preview": "vite preview"
   },
   "dependencies": {
     "@mistralai/mistralai": "^1.11.0",
@@ -18,16 +16,15 @@
     "@vercel/analytics": "^1.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "express": "^4.22.1",
-    "firebase": "^12.5.0",
+    "firebase": "^12.11.0",
+    "firebase-admin": "^13.0.0",
     "framer-motion": "^12.24.0",
     "lucide-react": "^0.562.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
     "sonner": "^2.0.7",
+    "stripe": "^17.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7"
   },
@@ -38,7 +35,6 @@
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.23",
     "baseline-browser-mapping": "^2.9.11",
-    "concurrently": "^8.2.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.19",
     "typescript": "~5.8.2",

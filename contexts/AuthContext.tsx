@@ -44,30 +44,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signInWithGoogle = async () => {
         try {
             setAuthLoading(true);
-            const result = await signInWithPopup(auth, googleProvider);
-            // This gives you a Google Access Token. You can use it to access the Google API.
-            // const credential = GoogleAuthProvider.credentialFromResult(result);
-            // const token = credential?.accessToken;
-            // The signed-in user info.
-            const user = result.user;
-            console.log('Successfully signed in:', user.email);
+            await signInWithPopup(auth, googleProvider);
         } catch (error: any) {
             console.error("Error signing in with Google: ", error);
-            // Handle Errors here.
             const errorCode = error.code;
-            const errorMessage = error.message;
-            // The email of the user's account used.
-            const email = error.customData?.email;
-            
-            if (errorCode === 'auth/popup-blocked') {
-                alert('Popup was blocked. Please allow popups for this site and try again.');
-            } else if (errorCode === 'auth/cancelled-popup-request') {
-                // User cancelled, no need to show error
-            } else if (errorCode === 'auth/unauthorized-domain') {
-                alert('This domain is not authorized for Google sign-in. Please contact support.');
-            } else {
-                alert(`Sign-in failed: ${errorMessage}`);
+            if (errorCode === 'auth/cancelled-popup-request') {
+                // User cancelled — swallow silently
+                return;
             }
+            throw error; // re-throw so UI can display the error
         } finally {
             setAuthLoading(false);
         }

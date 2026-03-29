@@ -10,7 +10,7 @@ import { usePayment } from "../../contexts/PaymentContext";
 const PricingPage = () => {
   const navigate = useNavigate();
   const { currentUser } = useAuth();
-  const { redirectToPayment, isPaid } = usePayment();
+  const { redirectToPayment, isPaid, userPlan } = usePayment();
 
   const handleTierClick = (tierName: string) => {
     if (tierName === "Basic") {
@@ -19,17 +19,14 @@ const PricingPage = () => {
     }
 
     if (!currentUser) {
-      // Redirect to app with a flag to show auth modal or just let them sign in
       navigate('/app?auth=true');
       return;
     }
 
     if (tierName === "Pro") {
-      redirectToPayment();
+      redirectToPayment('pro');
     } else if (tierName === "Enterprise") {
-      // For now, enterprise also goes to payment or a contact form
-      // Let's just use the same payment for now or redirect to app
-      navigate('/app');
+      redirectToPayment('enterprise');
     }
   };
 
@@ -49,7 +46,7 @@ const PricingPage = () => {
     },
     {
       name: "Pro",
-      price: "$10",
+      price: "$9.99",
       period: "/month",
       description: "Our most popular plan for serious credit repair.",
       features: [
@@ -64,7 +61,7 @@ const PricingPage = () => {
     },
     {
       name: "Enterprise",
-      price: "$29",
+      price: "$29.99",
       period: "/month",
       description: "For power users and credit professionals.",
       features: [
@@ -136,9 +133,16 @@ const PricingPage = () => {
                   }`}
                   variant={tier.highlight ? "default" : "outline"}
                   onClick={() => handleTierClick(tier.name)}
-                  disabled={tier.name === "Pro" && isPaid}
+                  disabled={
+                    (tier.name === "Pro" && userPlan === "pro") ||
+                    (tier.name === "Enterprise" && userPlan === "enterprise")
+                  }
                 >
-                  {tier.name === "Pro" && isPaid ? "Current Plan" : tier.buttonText}
+                  {tier.name === "Pro" && userPlan === "pro"
+                    ? "Current Plan"
+                    : tier.name === "Enterprise" && userPlan === "enterprise"
+                    ? "Current Plan"
+                    : tier.buttonText}
                 </Button>
               </div>
             ))}

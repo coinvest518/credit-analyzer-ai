@@ -1,14 +1,23 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { db } from '../firebase';
-import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+
+// Hardcoded payment links — these are public URLs, not secrets
+const PAYMENT_LINKS = {
+  pro:        'https://buy.stripe.com/8x2bJ1e2ucr8cdl8rKew80p',  // $9.99
+  enterprise: 'https://buy.stripe.com/aFa00je2ufDk4KTbDWew80r',  // $29.99
+};
+
+export type UserPlan = 'free' | 'pro' | 'enterprise';
 
 interface PaymentContextType {
   isPaid: boolean;
+  userPlan: UserPlan;
   hasUsedFreeDownload: boolean;
   canDownload: boolean;
   checkPaymentStatus: () => Promise<void>;
-  redirectToPayment: () => void;
+  redirectToPayment: (plan: 'pro' | 'enterprise') => void;
   markFreeDownloadUsed: () => Promise<void>;
 }
 
@@ -25,72 +34,63 @@ export const usePayment = () => {
 export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
   const [isPaid, setIsPaid] = useState(false);
+  const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [hasUsedFreeDownload, setHasUsedFreeDownload] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  // checkPaymentStatus is kept for manual refreshes
   const checkPaymentStatus = async () => {
+    // The real-time listener below handles all updates automatically.
+    // This is a no-op kept for API compatibility.
+  };
+
+  const redirectToPayment = (plan: 'pro' | 'enterprise') => {
+    if (!currentUser) return;
+    const link = PAYMENT_LINKS[plan];
+    const url = `${link}?client_reference_id=${currentUser.uid}&prefilled_email=${encodeURIComponent(currentUser.email || '')}`;
+    window.open(url, '_blank');
+  };
+
+  // Real-time Firestore listener — updates UI instantly when isPaid changes
+  // (e.g. after Stripe webhook updates the doc)
+  useEffect(() => {
     if (!currentUser) {
       setIsPaid(false);
-      // Check anonymous free download usage
+      setUserPlan('free');
       const anonymousFreeUsed = localStorage.getItem('anonymous_free_download');
       setHasUsedFreeDownload(anonymousFreeUsed === 'used');
       setLoading(false);
       return;
     }
-    
-    try {
-      // 1. Check Firestore first (Source of Truth)
-      const userDocRef = doc(db, 'users', currentUser.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists()) {
-        const data = userDoc.data();
+
+    const userDocRef = doc(db, 'users', currentUser.uid);
+    const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
         setIsPaid(data.isPaid === true);
+        setUserPlan((data.plan as UserPlan) || (data.isPaid ? 'pro' : 'free'));
         setHasUsedFreeDownload(data.hasUsedFreeDownload === true);
-        
-        // Sync to localStorage for offline/quick access
         localStorage.setItem(`payment_${currentUser.uid}`, data.isPaid ? 'paid' : 'unpaid');
-        localStorage.setItem(`free_download_${currentUser.uid}`, data.hasUsedFreeDownload ? 'used' : 'unused');
       } else {
-        // 2. Fallback to localStorage if doc doesn't exist yet
-        const paymentStatus = localStorage.getItem(`payment_${currentUser.uid}`);
-        const freeDownloadUsed = localStorage.getItem(`free_download_${currentUser.uid}`);
-        
-        setIsPaid(paymentStatus === 'paid');
-        setHasUsedFreeDownload(freeDownloadUsed === 'used');
-
-        // Initialize Firestore doc with local data
-        await setDoc(userDocRef, {
+        // Doc doesn't exist yet — seed it
+        setDoc(userDocRef, {
           email: currentUser.email,
-          isPaid: paymentStatus === 'paid',
-          hasUsedFreeDownload: freeDownloadUsed === 'used',
+          isPaid: false,
+          hasUsedFreeDownload: false,
           updatedAt: new Date().toISOString()
-        });
+        }, { merge: true });
+        setIsPaid(false);
       }
-    } catch (error) {
-      console.error("Error checking payment status from Firestore:", error);
-      // Final fallback to localStorage on error
-      const paymentStatus = localStorage.getItem(`payment_${currentUser.uid}`);
-      const freeDownloadUsed = localStorage.getItem(`free_download_${currentUser.uid}`);
-      setIsPaid(paymentStatus === 'paid');
-      setHasUsedFreeDownload(freeDownloadUsed === 'used');
-    } finally {
       setLoading(false);
-    }
-  };
+    }, (error) => {
+      console.error('Payment status listener error:', error);
+      // Fallback to localStorage on permission error
+      const paymentStatus = localStorage.getItem(`payment_${currentUser.uid}`);
+      setIsPaid(paymentStatus === 'paid');
+      setLoading(false);
+    });
 
-  const redirectToPayment = () => {
-    const paymentLink = import.meta.env.VITE_STRIPE_PAYMENT_LINK;
-    if (paymentLink && currentUser) {
-      // Add user ID as metadata to track the payment
-      // Stripe Payment Links support client_reference_id
-      const urlWithMetadata = `${paymentLink}?client_reference_id=${currentUser.uid}&prefilled_email=${encodeURIComponent(currentUser.email || '')}`;
-      window.open(urlWithMetadata, '_blank');
-    }
-  };
-
-  useEffect(() => {
-    checkPaymentStatus();
+    return unsubscribe;
   }, [currentUser]);
 
   // Listen for payment success (when user returns from Stripe)
@@ -161,6 +161,7 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const value = {
     isPaid,
+    userPlan,
     hasUsedFreeDownload,
     canDownload,
     checkPaymentStatus,
