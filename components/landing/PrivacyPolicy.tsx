@@ -52,13 +52,13 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">5. Your Rights</h2>
             <p>
-              You have the right to access, correct, or delete your personal information. You can delete your account and all associated data at any time through the application settings or by contacting us.
+              You have the right to access, correct, or delete your personal information. You can delete your account and all associated data at any time through the application settings or by contacting us at <a href="mailto:coinvest518@gmail.com" className="text-primary hover:underline">coinvest518@gmail.com</a>.
             </p>
           </section>
 
           <div className="pt-8 border-t border-border mt-12">
             <p className="text-sm">
-              Last updated: January 6, 2026
+              Last updated: April 21, 2026
             </p>
           </div>
         </div>

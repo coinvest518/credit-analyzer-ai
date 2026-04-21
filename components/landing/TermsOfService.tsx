@@ -13,7 +13,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">1. Acceptance of Terms</h2>
             <p>
-              By accessing and using DisputeAI (the "Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use our Service.
+              By accessing and using ReportDisputer (the "Service"), you agree to be bound by these Terms of Service. If you do not agree, please do not use our Service.
             </p>
           </section>
 
@@ -24,14 +24,14 @@ const TermsOfService = () => {
                 A. NOT A CREDIT REPAIR ORGANIZATION:
               </p>
               <p>
-                DisputeAI is NOT a "credit repair organization" as defined under the Credit Repair Organizations Act (CROA). We do not provide credit repair services for a fee. We provide an AI-powered software tool that assists users in analyzing their own credit reports and generating their own dispute letters. We do not represent you or negotiate with credit bureaus on your behalf.
+                ReportDisputer is NOT a "credit repair organization" as defined under the Credit Repair Organizations Act (CROA). We do not provide credit repair services for a fee. We provide an AI-powered software tool that assists users in analyzing their own credit reports and generating their own dispute letters. We do not represent you or negotiate with credit bureaus on your behalf.
               </p>
               
               <p className="font-bold text-foreground italic">
                 B. NOT LEGAL OR FINANCIAL ADVICE:
               </p>
               <p>
-                The information, analysis, and recommendations provided by our AI are for educational and informational purposes only. DisputeAI does not provide legal, financial, or tax advice. You should consult with a qualified professional before making any financial or legal decisions.
+                The information, analysis, and recommendations provided by our AI are for educational and informational purposes only. ReportDisputer does not provide legal, financial, or tax advice. You should consult with a qualified professional before making any financial or legal decisions.
               </p>
               
               <p className="font-bold text-foreground italic">
@@ -66,7 +66,7 @@ const TermsOfService = () => {
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">5. Limitation of Liability</h2>
             <p>
-              To the maximum extent permitted by law, DisputeAI shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.
+              To the maximum extent permitted by law, ReportDisputer shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly.
             </p>
           </section>
 
@@ -77,9 +77,16 @@ const TermsOfService = () => {
             </p>
           </section>
 
+          <section>
+            <h2 className="text-2xl font-semibold text-foreground mb-4">7. Contact Us</h2>
+            <p>
+              If you have any questions about these Terms, please contact us at <a href="mailto:coinvest518@gmail.com" className="text-primary hover:underline">coinvest518@gmail.com</a>.
+            </p>
+          </section>
+
           <div className="pt-8 border-t border-border mt-12">
             <p className="text-sm">
-              Last updated: January 6, 2026
+              Last updated: April 21, 2026
             </p>
           </div>
         </div>

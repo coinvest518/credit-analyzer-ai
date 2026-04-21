@@ -11,7 +11,7 @@ const Footer = () => {
               <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
                 <Sparkles className="w-5 h-5 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold text-foreground">DisputeAI</span>
+              <span className="text-xl font-bold text-foreground">ReportDisputer</span>
             </div>
             <p className="text-muted-foreground text-sm max-w-sm">
               AI-powered credit repair that helps you identify and dispute errors on your credit report automatically.
@@ -33,7 +33,7 @@ const Footer = () => {
             <h4 className="font-semibold text-foreground mb-4">Company</h4>
             <ul className="space-y-2">
               <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">About</a></li>
-              <li><a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
+              <li><a href="mailto:coinvest518@gmail.com" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
               <li><a href="/privacy" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a></li>
               <li><a href="/terms" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Terms of Service</a></li>
             </ul>
@@ -42,11 +42,16 @@ const Footer = () => {
 
         <div className="pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-muted-foreground">
-            © 2025 DisputeAI. All rights reserved.
+            © 2026 ReportDisputer. All rights reserved.
           </p>
-          <p className="text-xs text-muted-foreground">
-            disputeai.xyz
-          </p>
+          <div className="flex flex-col sm:items-end gap-1">
+            <a href="mailto:coinvest518@gmail.com" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+              coinvest518@gmail.com
+            </a>
+            <p className="text-xs text-muted-foreground">
+              reportdisputer.xyz
+            </p>
+          </div>
         </div>
       </div>
     </footer>

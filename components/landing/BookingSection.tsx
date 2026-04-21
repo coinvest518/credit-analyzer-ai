@@ -6,11 +6,29 @@ import { CalendarDays, MessageSquare, ArrowRight, CheckCircle } from "lucide-rea
 const BookingSection = () => {
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Wire to your backend / email service
-    setSubmitted(true);
+    setError(null);
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/send-contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) {
+        const { error: msg } = await res.json().catch(() => ({ error: 'Failed to send' }));
+        throw new Error(msg || 'Failed to send');
+      }
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -161,8 +179,11 @@ const BookingSection = () => {
                     className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-slate-500 text-sm focus:outline-none focus:border-primary resize-none"
                   />
                 </div>
-                <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
-                  Send Message
+                {error && (
+                  <p className="text-sm text-red-400">{error}</p>
+                )}
+                <Button type="submit" disabled={submitting} className="w-full bg-primary hover:bg-primary/90 text-primary-foreground gap-2 disabled:opacity-60">
+                  {submitting ? 'Sending…' : 'Send Message'}
                   <ArrowRight className="w-4 h-4" />
                 </Button>
               </form>
