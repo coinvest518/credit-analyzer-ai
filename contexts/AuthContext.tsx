@@ -134,19 +134,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // Ensure user document exists in Firestore
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
-                
-                if (!userDoc.exists()) {
-                    await setDoc(userDocRef, {
-                        email: user.email,
-                        displayName: user.displayName,
-                        photoURL: user.photoURL,
-                        createdAt: serverTimestamp(),
-                        isPaid: false,
-                        hasUsedFreeDownload: false
-                    }, { merge: true });
+                try {
+                    const userDocRef = doc(db, 'users', user.uid);
+                    const userDoc = await getDoc(userDocRef);
+
+                    if (!userDoc.exists()) {
+                        await setDoc(userDocRef, {
+                            email: user.email,
+                            displayName: user.displayName,
+                            photoURL: user.photoURL,
+                            createdAt: serverTimestamp(),
+                            isPaid: false,
+                            hasUsedFreeDownload: false
+                        }, { merge: true });
+                    }
+                } catch (err) {
+                    console.error('Failed to sync user doc in Firestore:', err);
                 }
             }
             setCurrentUser(user);
