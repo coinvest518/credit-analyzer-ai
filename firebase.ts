@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+import { initializeFirestore } from "firebase/firestore";
 
 // Firebase configuration using environment variables
 const firebaseConfig = {
@@ -22,7 +22,12 @@ const app = initializeApp(firebaseConfig);
 
 // Export auth and provider instances
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+// autoDetectLongPolling: falls back from streaming WebChannel to long-polling
+// when the streaming transport stalls (extensions, corporate proxies, etc.),
+// which is what causes the "client is offline" error on otherwise-online users.
+export const db = initializeFirestore(app, {
+  experimentalAutoDetectLongPolling: true,
+});
 export const googleProvider = new GoogleAuthProvider();
 
 // Optional: Add additional scopes if needed
