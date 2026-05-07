@@ -89,10 +89,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/app')}>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/app?auth=true')}>
                 Log In
               </Button>
-              <Button size="sm" onClick={() => navigate('/app')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button size="sm" onClick={() => navigate('/app?auth=true')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Get Started
               </Button>
             </>
@@ -154,10 +154,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm" className="w-full" onClick={() => { navigate('/app'); setMenuOpen(false); }}>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => { navigate('/app?auth=true'); setMenuOpen(false); }}>
                   Log In
                 </Button>
-                <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => { navigate('/app'); setMenuOpen(false); }}>
+                <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => { navigate('/app?auth=true'); setMenuOpen(false); }}>
                   Get Started
                 </Button>
               </div>

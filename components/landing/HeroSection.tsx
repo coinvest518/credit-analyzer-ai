@@ -2,10 +2,13 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import CreditScoreGauge from "./CreditScoreGauge";
 
 const HeroSection = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
+  const goToApp = () => navigate(currentUser ? '/app' : '/app?auth=true');
   return (
     <section className="relative min-h-screen bg-hero-gradient overflow-hidden pt-24 flex items-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -60,7 +63,7 @@ const HeroSection = () => {
               <Button
                 size="lg"
                 className="gap-2 shadow-glow bg-primary hover:bg-primary/90 text-primary-foreground"
-                onClick={() => navigate('/app')}
+                onClick={goToApp}
               >
                 Start Free Analysis
                 <ArrowRight className="w-4 h-4" />
@@ -113,7 +116,7 @@ const HeroSection = () => {
               <Button
                 className="w-full mt-8 bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
                 size="lg"
-                onClick={() => navigate('/app')}
+                onClick={goToApp}
               >
                 Analyze My Report
                 <ArrowRight className="w-4 h-4" />

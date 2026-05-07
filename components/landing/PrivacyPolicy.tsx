@@ -45,7 +45,7 @@ const PrivacyPolicy = () => {
           <section>
             <h2 className="text-2xl font-semibold text-foreground mb-4">4. Third-Party Services</h2>
             <p>
-              We use secure third-party providers like Mistral AI for processing and Firebase for storage. These providers are bound by strict confidentiality and security requirements.
+              We use Mistral AI for document processing and Firebase for authentication only. Uploaded credit reports are processed in-memory and are never stored on our servers. These providers are bound by strict confidentiality and security requirements.
             </p>
           </section>
 

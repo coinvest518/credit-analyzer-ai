@@ -13,9 +13,7 @@ import { BlogAdmin } from './components/BlogAdmin';
 import { useAuth } from './contexts/AuthContext';
 import { usePayment } from './contexts/PaymentContext';
 import { workflowSteps } from './constants';
-import { storage, db } from './firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { nvidiaChatStream } from './lib/nvidia';
 import DisputeTracker from './components/DisputeTracker';
 import type { Dispute } from './components/DisputeTracker';
 import type { UploadedFile, AnalysisResult, ProcessingTask, LetterPackage, TrackingInfo } from './types';
@@ -148,36 +146,13 @@ const App: React.FC = () => {
     runProcessingSequence(tasks);
     
     const reader = new FileReader();
-    reader.onloadend = async () => {
+    reader.onloadend = () => {
         const base64String = (reader.result as string).split(',')[1];
         const fileData: UploadedFile = {
             name: file.name,
             type: file.type,
             content: base64String,
         };
-
-        // If user is logged in, upload to Firebase Storage
-        if (currentUser) {
-          try {
-            const storageRef = ref(storage, `users/${currentUser.uid}/reports/${Date.now()}_${file.name}`);
-            const snapshot = await uploadBytes(storageRef, file);
-            const downloadURL = await getDownloadURL(snapshot.ref);
-            
-            // Save reference in Firestore
-            const userDocRef = doc(db, 'users', currentUser.uid);
-            await updateDoc(userDocRef, {
-              reports: arrayUnion({
-                name: file.name,
-                url: downloadURL,
-                uploadedAt: new Date().toISOString()
-              })
-            });
-            
-            fileData.url = downloadURL;
-          } catch (error) {
-            console.error("Error uploading to Firebase Storage:", error);
-          }
-        }
 
         setUploadedFile(fileData);
         setCompletedStep(Math.max(completedStep, 2));
@@ -265,7 +240,7 @@ Return ONLY valid JSON.`;
             messages: [{ role: 'user', content: analysisPrompt }],
             responseFormat: { type: 'json_object' }
         });
-        
+
         const jsonResponse = JSON.parse(String(response.choices[0].message.content || '{}'));
         setAnalysisResult(jsonResponse);
         setCompletedStep(Math.max(completedStep, 3));
@@ -280,21 +255,20 @@ Return ONLY valid JSON.`;
 
   const handleGenerateReport = async () => {
     if (!analysisResult) { setError("Analysis data is missing."); return; }
-    
+
     // Start processing visualization
     const tasks = activeStepData?.processingTasks || [];
     runProcessingSequence(tasks);
     setError(null);
+    setSummaryReport('');
 
     try {
-        const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
-        
         // Create compact account list
-        const accountList = analysisResult.analyzedAccounts?.map(acc => 
+        const accountList = analysisResult.analyzedAccounts?.map(acc =>
           `${acc.creditorName} (${acc.accountNumber})`).join(', ') || 'No accounts';
-        const violationCount = analysisResult.analyzedAccounts?.reduce((sum, acc) => 
+        const violationCount = analysisResult.analyzedAccounts?.reduce((sum, acc) =>
           sum + acc.potentialViolations.length, 0) || 0;
-        
+
         const prompt = `You are a consumer law expert. Generate a consolidated narrative summary report for a layperson.
 
 Global Summary: ${analysisResult.globalSummary}
@@ -303,31 +277,42 @@ Accounts (${analysisResult.analyzedAccounts?.length || 0}): ${accountList}
 Total Violations Found: ${violationCount}
 
 For each account, explain violations referencing relevant laws (FCRA, FDCPA) and why it matters to the consumer. Use markdown formatting (# Heading, ## Account, - List, **bold**).`;
-        
-        const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        setSummaryReport(String(response.choices[0].message.content || ''));
-    } catch (e: any) { setError(`Report generation failed: ${e.message}`); console.error(e); } finally { 
-        setIsLoading(false); 
+
+        let acc = '';
+        let firstChunk = true;
+        for await (const chunk of nvidiaChatStream({ messages: [{ role: 'user', content: prompt }] })) {
+            if (firstChunk) {
+                // Drop the processing modal so streamed markdown becomes visible
+                setIsLoading(false);
+                setProcessingTasks([]);
+                firstChunk = false;
+            }
+            acc += chunk;
+            setSummaryReport(acc);
+        }
+    } catch (e: any) {
+        setError(`Report generation failed: ${e.message}`);
+        console.error(e);
+        setIsLoading(false);
         setProcessingTasks([]);
     }
   };
 
   const handleGenerateActionPlan = async () => {
     if (!analysisResult || !summaryReport) { setError("Analysis or report data is missing."); return; }
-    
+
     // Start processing visualization
     const tasks = activeStepData?.processingTasks || [];
     runProcessingSequence(tasks);
     setError(null);
+    setActionPlan('');
 
     try {
-        const client = new Mistral({ apiKey: import.meta.env.VITE_MISTRAL_API_KEY! });
-        
         // Compact data for prompt
         const accountCount = analysisResult.analyzedAccounts?.length || 0;
         const accountNames = analysisResult.analyzedAccounts?.map(a => a.creditorName).slice(0, 5).join(', ') || 'accounts';
         const hasCollections = analysisResult.analyzedAccounts?.some(a => a.accountStatus?.toLowerCase().includes('collection'));
-        
+
         const prompt = `Create a prioritized, step-by-step action plan for a consumer with ${accountCount} problematic credit accounts.
 
 Accounts include: ${accountNames}${accountCount > 5 ? ' and others' : ''}.
@@ -339,12 +324,23 @@ Consolidate actions (e.g., "Draft dispute letters for all accounts"). Explain ea
 3. Calendar 30-day follow-ups
 
 Use markdown formatting. Be specific and actionable.`;
-        
-        const response = await client.chat.complete({ model: 'mistral-large-latest', messages: [{ role: 'user', content: prompt }] });
-        setActionPlan(String(response.choices[0].message.content || ''));
+
+        let acc = '';
+        let firstChunk = true;
+        for await (const chunk of nvidiaChatStream({ messages: [{ role: 'user', content: prompt }] })) {
+            if (firstChunk) {
+                setIsLoading(false);
+                setProcessingTasks([]);
+                firstChunk = false;
+            }
+            acc += chunk;
+            setActionPlan(acc);
+        }
         setCompletedStep(Math.max(completedStep, 4));
-    } catch (e: any) { setError(`Action plan generation failed: ${e.message}`); console.error(e); } finally { 
-        setIsLoading(false); 
+    } catch (e: any) {
+        setError(`Action plan generation failed: ${e.message}`);
+        console.error(e);
+        setIsLoading(false);
         setProcessingTasks([]);
     }
   };

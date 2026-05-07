@@ -2,9 +2,11 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 
 const CTASection = () => {
   const navigate = useNavigate();
+  const { currentUser } = useAuth();
   return (
     <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-5 pointer-events-none"
@@ -40,7 +42,7 @@ const CTASection = () => {
             <Button
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-base px-8"
-              onClick={() => navigate('/app')}
+              onClick={() => navigate(currentUser ? '/app' : '/app?auth=true')}
             >
               Start Free Analysis
               <ArrowRight className="w-5 h-5" />
