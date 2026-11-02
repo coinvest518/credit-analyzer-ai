@@ -7,11 +7,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '../contexts/AuthContext';
-import { db } from '../firebase';
-import {
-  collection, onSnapshot, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, serverTimestamp
-} from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,6 +28,45 @@ export interface Dispute {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Database rows use snake_case; the UI uses camelCase.
+interface DisputeRow {
+  id: string;
+  bureau: Bureau;
+  account_name: string;
+  letter_type: LetterType;
+  sent_date: string;
+  deadline_date: string;
+  status: DisputeStatus;
+  notes: string | null;
+  created_at: string;
+}
+
+function fromRow(r: DisputeRow): Dispute {
+  return {
+    id: r.id,
+    bureau: r.bureau,
+    accountName: r.account_name,
+    letterType: r.letter_type,
+    sentDate: r.sent_date,
+    deadlineDate: r.deadline_date,
+    status: r.status,
+    notes: r.notes ?? undefined,
+    createdAt: r.created_at,
+  };
+}
+
+function toRow(d: Omit<Dispute, 'id' | 'createdAt'>) {
+  return {
+    bureau: d.bureau,
+    account_name: d.accountName,
+    letter_type: d.letterType,
+    sent_date: d.sentDate,
+    deadline_date: d.deadlineDate,
+    status: d.status,
+    notes: d.notes ?? null,
+  };
+}
 
 const BUREAU_COLORS: Record<Bureau, { bg: string; text: string; dot: string }> = {
   TransUnion:      { bg: 'bg-blue-100',   text: 'text-blue-700',   dot: 'bg-blue-500' },
@@ -370,19 +405,33 @@ const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd }) => {
     return () => clearInterval(id);
   }, []);
 
-  // Real-time Firestore listener
-  useEffect(() => {
-    if (!currentUser) { setLoading(false); return; }
-    const q = query(
-      collection(db, 'users', currentUser.uid, 'disputes'),
-      orderBy('createdAt', 'desc')
-    );
-    const unsub = onSnapshot(q, (snap) => {
-      setDisputes(snap.docs.map(d => ({ id: d.id, ...d.data() } as Dispute)));
-      setLoading(false);
-    });
-    return unsub;
+  // Load this user's disputes from Supabase
+  const loadDisputes = useCallback(async () => {
+    if (!currentUser) return;
+    const { data, error } = await supabase
+      .from('disputes')
+      .select('*')
+      .order('created_at', { ascending: false });
+    if (error) {
+      console.error('Could not load disputes:', error);
+    } else {
+      setDisputes((data ?? []).map(fromRow));
+    }
+    setLoading(false);
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!currentUser) { setDisputes([]); setLoading(false); return; }
+    setLoading(true);
+    loadDisputes();
+  }, [currentUser, loadDisputes]);
+
+  const addDispute = useCallback(async (data: Omit<Dispute, 'id' | 'createdAt'>) => {
+    if (!currentUser) return;
+    const { error } = await supabase.from('disputes').insert(toRow(data));
+    if (error) console.error('Could not add dispute:', error);
+    await loadDisputes();
+  }, [currentUser, loadDisputes]);
 
   // Auto-add disputes from letter generation
   useEffect(() => {
@@ -391,23 +440,25 @@ const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoAdd]);
 
-  const addDispute = useCallback(async (data: Omit<Dispute, 'id' | 'createdAt'>) => {
-    if (!currentUser) return;
-    await addDoc(collection(db, 'users', currentUser.uid, 'disputes'), {
-      ...data,
-      createdAt: serverTimestamp(),
-    });
-  }, [currentUser]);
-
   const updateStatus = useCallback(async (id: string, status: DisputeStatus) => {
     if (!currentUser) return;
-    await updateDoc(doc(db, 'users', currentUser.uid, 'disputes', id), { status });
-  }, [currentUser]);
+    setDisputes(prev => prev.map(d => (d.id === id ? { ...d, status } : d)));
+    const { error } = await supabase.from('disputes').update({ status }).eq('id', id);
+    if (error) {
+      console.error('Could not update dispute:', error);
+      await loadDisputes();
+    }
+  }, [currentUser, loadDisputes]);
 
   const deleteDispute = useCallback(async (id: string) => {
     if (!currentUser) return;
-    await deleteDoc(doc(db, 'users', currentUser.uid, 'disputes', id));
-  }, [currentUser]);
+    setDisputes(prev => prev.filter(d => d.id !== id));
+    const { error } = await supabase.from('disputes').delete().eq('id', id);
+    if (error) {
+      console.error('Could not delete dispute:', error);
+      await loadDisputes();
+    }
+  }, [currentUser, loadDisputes]);
 
   // Stats
   const active   = disputes.filter(d => d.status === 'pending' || d.status === 'responded');

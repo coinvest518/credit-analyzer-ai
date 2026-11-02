@@ -2,9 +2,9 @@ import React from 'react';
 
 export const EnvCheck: React.FC = () => {
   const envVars = {
-    VITE_FIREBASE_API_KEY: import.meta.env.VITE_FIREBASE_API_KEY ? 'Set' : 'Missing',
-    VITE_FIREBASE_AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN ? 'Set' : 'Missing',
-    VITE_FIREBASE_PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID ? 'Set' : 'Missing',
+    VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL ? 'Set' : 'Missing',
+    VITE_SUPABASE_PUBLISHABLE_KEY:
+      (import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY) ? 'Set' : 'Missing',
     VITE_MISTRAL_API_KEY: import.meta.env.VITE_MISTRAL_API_KEY ? 'Set' : 'Missing',
     VITE_NVIDIA_API_KEY: import.meta.env.VITE_NVIDIA_API_KEY ? 'Set' : 'Missing',
   };

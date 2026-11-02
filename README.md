@@ -7,7 +7,7 @@ An intelligent credit repair application that uses AI to analyze credit reports,
 - 🤖 **AI-Powered Analysis**: Uses Mistral AI to analyze credit documents
 - 🔍 **Violation Detection**: Identifies FCRA, FDCPA, and other legal violations
 - 📝 **Automated Letter Generation**: Creates professional dispute letters
-- 🔐 **Firebase Authentication**: Secure Google sign-in
+- 🔐 **Supabase Authentication**: Email/password and Google sign-in
 - 💳 **Stripe Payment Integration**: Premium subscription model
 - 📊 **Progress Tracking**: Step-by-step workflow management
 
@@ -15,7 +15,7 @@ An intelligent credit repair application that uses AI to analyze credit reports,
 
 - **Frontend**: React 19, TypeScript, Tailwind CSS
 - **Build Tool**: Vite
-- **Authentication**: Firebase Auth
+- **Authentication**: Supabase Auth
 - **AI**: Mistral AI API
 - **Payments**: Stripe Payment Links
 - **Hosting**: Ready for Vercel/Netlify deployment
@@ -40,23 +40,25 @@ Create a `.env.local` file in the root directory:
 # Mistral AI API Key
 VITE_MISTRAL_API_KEY=your_mistral_api_key_here
 
-# Firebase Configuration
-VITE_FIREBASE_API_KEY=your_firebase_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+# Supabase (login + database) — browser-safe values
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
+
+# Supabase server-only key (used by /api functions — never prefix with VITE_)
+SUPABASE_SECRET_KEY=sb_secret_...
+STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Stripe Configuration
 VITE_STRIPE_PAYMENT_LINK=https://buy.stripe.com/your_payment_link
 VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 ```
 
-### 4. Firebase Setup
-1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com)
-2. Enable Authentication → Google sign-in method
-3. Add your domain to authorized domains
-4. Copy configuration values to `.env.local`
+### 4. Supabase Setup (login, sign up, sign out, data)
+1. Create a free project at [supabase.com](https://supabase.com/dashboard)
+2. SQL Editor → paste all of `supabase/schema.sql` → Run (creates `profiles` + `disputes` with row-level security)
+3. Authentication → URL Configuration: Site URL `https://reportdisputer.xyz`, add redirect URLs `https://reportdisputer.xyz/**`, `https://*-coinvest518s-projects.vercel.app/**`, `http://localhost:3000/**`
+4. (Optional) Authentication → Sign In / Providers → Google: paste a Google OAuth client ID + secret. In Google Cloud the authorized redirect URI is `https://<your-project>.supabase.co/auth/v1/callback`
+5. Project Settings → API Keys: copy the URL, publishable key and secret key into Vercel env vars (see above)
 
 ### 5. Mistral AI Setup
 1. Get API key from [Mistral AI Console](https://console.mistral.ai)
@@ -64,8 +66,8 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 
 ### 6. Stripe Setup
 1. Create Stripe account and payment link
-2. Set success URL to: `https://yourdomain.com/?payment=success`
-3. Add payment link and publishable key to `.env.local`
+2. Set success URL to: `https://yourdomain.com/app?payment=success`
+3. Add a webhook endpoint `https://yourdomain.com/api/stripe-webhook` for `checkout.session.completed`, and put its signing secret in `STRIPE_WEBHOOK_SECRET`
 
 ### 7. Run Development Server
 ```bash
@@ -75,7 +77,7 @@ npm run dev
 ## User Flow
 
 1. **Free Access**: Users can explore steps 1-2 without signing in
-2. **Authentication**: Required for step 3+ (Google sign-in)
+2. **Authentication**: Required for step 3+ (email/password or Google, via Supabase)
 3. **Payment**: Premium subscription required for AI analysis
 4. **Full Access**: Complete credit repair workflow
 
@@ -163,7 +165,7 @@ After whitelisting your IP and setting the API key:
 Notes:
 - The proxy listens on port `3001` by default
 - Widget opens in a modal overlay with close button
-- User IDs are automatically generated (can integrate with Firebase auth later)
+- User IDs are automatically generated (linked to Supabase user IDs)
 
 ## Project Structure
 
@@ -175,9 +177,11 @@ src/
 │   ├── Header.tsx      # App header with auth status
 │   └── ...
 ├── contexts/           # React contexts
-│   ├── AuthContext.tsx # Firebase authentication
-│   └── PaymentContext.tsx # Stripe payment handling
-├── firebase.ts         # Firebase configuration
+│   ├── AuthContext.tsx # Supabase authentication
+│   └── PaymentContext.tsx # Paid status (set by the Stripe webhook)
+├── lib/supabase.ts     # Supabase browser client
+├── supabase/schema.sql # Database tables + security rules
+├── api/                # Vercel functions (stripe-webhook, delete-account)
 ├── App.tsx            # Main application component
 └── index.tsx          # Application entry point
 ```

@@ -4,6 +4,7 @@ import { LogoIcon, MenuIcon, CloseIcon } from './icons/Icons';
 import { useAuth } from '../contexts/AuthContext';
 import { usePayment } from '../contexts/PaymentContext';
 import BuyMeACoffeeButton from './BuyMeACoffeeButton';
+import { AccountModal } from './AccountModal';
 
 interface HeaderProps {
   onSignInClick?: () => void;
@@ -18,6 +19,7 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
   const { currentUser, signOutUser } = useAuth();
   const { isPaid } = usePayment();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showAccount, setShowAccount] = useState(false);
 
   const initials = currentUser
     ? (currentUser.displayName
@@ -67,7 +69,11 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
             </button>
             {currentUser ? (
               <>
-                <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => setShowAccount(true)}
+                  title="Account settings"
+                  className="flex items-center space-x-2 rounded-lg px-1 py-1 hover:bg-gray-800 transition-colors"
+                >
                   {currentUser.photoURL ? (
                     <img src={currentUser.photoURL} alt="Profile" className="w-8 h-8 rounded-full object-cover ring-2 ring-cyan-500/30" />
                   ) : (
@@ -76,7 +82,7 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
                     </div>
                   )}
                   <span className="text-gray-300 text-sm max-w-32 truncate">{currentUser.displayName || currentUser.email}</span>
-                </div>
+                </button>
                 <button
                   onClick={signOutUser}
                   className="px-3 py-2 text-sm font-medium bg-gray-700 hover:bg-gray-600 text-gray-300 rounded-lg transition-colors"
@@ -155,6 +161,15 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
                   </div>
                   <button
                     onClick={() => {
+                      setShowAccount(true);
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-3 text-sm font-medium bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition-colors"
+                  >
+                    ⚙️ Account Settings
+                  </button>
+                  <button
+                    onClick={() => {
                       signOutUser();
                       setIsMobileMenuOpen(false);
                     }}
@@ -178,6 +193,7 @@ export const Header: React.FC<HeaderProps> = ({ onSignInClick, onUpgradeClick, o
           </div>
         )}
       </div>
+      <AccountModal isOpen={showAccount} onClose={() => setShowAccount(false)} />
     </header>
   );
 };

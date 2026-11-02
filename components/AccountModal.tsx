@@ -13,11 +13,13 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) =
     const [displayName, setDisplayName] = useState('');
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [message, setMessage] = useState('');
 
     useEffect(() => {
         if (currentUser) {
             setDisplayName(currentUser.displayName || '');
         }
+        setMessage('');
     }, [currentUser, isOpen]);
 
     if (!isOpen || !currentUser) {
@@ -30,9 +32,10 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) =
             setIsSaving(true);
             try {
                 await updateUserProfile(displayName.trim());
-            } catch (error) {
+                setMessage('Name saved.');
+            } catch (error: any) {
                 console.error("Failed to update profile", error);
-                alert("Failed to update profile.");
+                setMessage(error?.message || 'Failed to update profile.');
             } finally {
                 setIsSaving(false);
             }
@@ -45,15 +48,25 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) =
             try {
                 await deleteAccount();
                 onClose(); 
-            } catch (error) {
-                // Error is already alerted in AuthContext
+            } catch (error: any) {
+                setMessage(error?.message || 'Could not delete your account.');
             } finally {
                 setIsDeleting(false);
             }
         }
     };
 
-    const isGoogleProvider = currentUser.providerData.some(p => p.providerId === 'google.com');
+    const isGoogleProvider = currentUser.provider === 'google';
+
+    const handlePasswordReset = async () => {
+        setMessage('');
+        try {
+            await sendPasswordReset();
+            setMessage('Password reset email sent. Check your inbox.');
+        } catch (error: any) {
+            setMessage(error?.message || 'Could not send the reset email.');
+        }
+    };
 
     return (
         <div 
@@ -73,7 +86,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) =
                 </button>
                 <div className="flex flex-col items-center text-center">
                     {currentUser.photoURL && <img src={currentUser.photoURL} alt="User avatar" className="w-24 h-24 rounded-full border-4 border-gray-600 mb-4" />}
-                    <h2 id="account-modal-title" className="text-2xl font-bold text-white break-all">{currentUser.displayName}</h2>
+                    <h2 id="account-modal-title" className="text-2xl font-bold text-white break-all">{currentUser.displayName || 'Your account'}</h2>
                     <p className="text-gray-400 break-all">{currentUser.email}</p>
                 </div>
                 
@@ -89,8 +102,12 @@ export const AccountModal: React.FC<AccountModalProps> = ({ isOpen, onClose }) =
                     </button>
                 </form>
 
+                {message && (
+                    <p className="mt-4 text-sm text-center text-cyan-300" role="status">{message}</p>
+                )}
+
                 <div className="mt-6 space-y-3">
-                     <button onClick={sendPasswordReset} disabled={isGoogleProvider} title={isGoogleProvider ? "Password management is handled by your Google account" : "Send password reset email"} className="w-full text-center px-4 py-2 bg-gray-700 text-gray-300 font-semibold rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">Send Password Reset Email</button>
+                     <button onClick={handlePasswordReset} disabled={isGoogleProvider} title={isGoogleProvider ? "Password management is handled by your Google account" : "Send password reset email"} className="w-full text-center px-4 py-2 bg-gray-700 text-gray-300 font-semibold rounded-lg hover:bg-gray-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed">Send Password Reset Email</button>
                      <button onClick={handleDelete} disabled={isDeleting} className="w-full text-center px-4 py-2 bg-red-800 text-red-100 font-semibold rounded-lg hover:bg-red-700 transition-all flex items-center justify-center disabled:opacity-50 disabled:cursor-wait">
                          {isDeleting ? <><SpinnerIcon className="w-5 h-5 mr-2 animate-spin" /> Deleting...</> : 'Delete Account'}
                      </button>

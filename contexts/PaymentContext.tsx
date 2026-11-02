@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
-import { db } from '../firebase';
-import { doc, setDoc, updateDoc, onSnapshot } from 'firebase/firestore';
+import { supabase } from '../lib/supabase';
 
 // Hardcoded payment links — these are public URLs, not secrets
 const PAYMENT_LINKS = {
@@ -21,6 +20,12 @@ interface PaymentContextType {
   markFreeDownloadUsed: () => Promise<void>;
 }
 
+interface ProfileRow {
+  is_paid: boolean | null;
+  plan: string | null;
+  has_used_free_download: boolean | null;
+}
+
 const PaymentContext = createContext<PaymentContextType | undefined>(undefined);
 
 export const usePayment = () => {
@@ -33,16 +38,37 @@ export const usePayment = () => {
 
 export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentUser } = useAuth();
+  const uid = currentUser?.uid ?? null;
   const [isPaid, setIsPaid] = useState(false);
   const [userPlan, setUserPlan] = useState<UserPlan>('free');
   const [hasUsedFreeDownload, setHasUsedFreeDownload] = useState(false);
-  const [loading, setLoading] = useState(true);
 
-  // checkPaymentStatus is kept for manual refreshes
-  const checkPaymentStatus = async () => {
-    // The real-time listener below handles all updates automatically.
-    // This is a no-op kept for API compatibility.
-  };
+  const applyProfile = useCallback((row: Partial<ProfileRow> | null) => {
+    const paid = row?.is_paid === true;
+    setIsPaid(paid);
+    setUserPlan(((row?.plan as UserPlan) || (paid ? 'pro' : 'free')));
+    setHasUsedFreeDownload(row?.has_used_free_download === true);
+  }, []);
+
+  /** Reads paid status from the database. Returns whether the user is paid. */
+  const fetchProfile = useCallback(async (): Promise<boolean> => {
+    if (!uid) return false;
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('is_paid, plan, has_used_free_download')
+      .eq('id', uid)
+      .maybeSingle();
+    if (error) {
+      console.error('Could not load payment status:', error);
+      return false;
+    }
+    applyProfile(data);
+    return data?.is_paid === true;
+  }, [uid, applyProfile]);
+
+  const checkPaymentStatus = useCallback(async () => {
+    await fetchProfile();
+  }, [fetchProfile]);
 
   const redirectToPayment = (plan: 'pro' | 'enterprise') => {
     if (!currentUser) return;
@@ -51,107 +77,54 @@ export const PaymentProvider: React.FC<{ children: React.ReactNode }> = ({ child
     window.open(url, '_blank');
   };
 
-  // Real-time Firestore listener — updates UI instantly when isPaid changes
-  // (e.g. after Stripe webhook updates the doc)
+  // Load status + listen live, so "Premium" appears as soon as the Stripe webhook updates the row.
   useEffect(() => {
-    if (!currentUser) {
-      setIsPaid(false);
-      setUserPlan('free');
-      const anonymousFreeUsed = localStorage.getItem('anonymous_free_download');
-      setHasUsedFreeDownload(anonymousFreeUsed === 'used');
-      setLoading(false);
+    if (!uid) {
+      applyProfile(null);
+      setHasUsedFreeDownload(localStorage.getItem('anonymous_free_download') === 'used');
       return;
     }
 
-    const userDocRef = doc(db, 'users', currentUser.uid);
-    const unsubscribe = onSnapshot(userDocRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.data();
-        setIsPaid(data.isPaid === true);
-        setUserPlan((data.plan as UserPlan) || (data.isPaid ? 'pro' : 'free'));
-        setHasUsedFreeDownload(data.hasUsedFreeDownload === true);
-        localStorage.setItem(`payment_${currentUser.uid}`, data.isPaid ? 'paid' : 'unpaid');
-      } else {
-        // Doc doesn't exist yet — seed it
-        setDoc(userDocRef, {
-          email: currentUser.email,
-          isPaid: false,
-          hasUsedFreeDownload: false,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        setIsPaid(false);
-      }
-      setLoading(false);
-    }, (error) => {
-      console.error('Payment status listener error:', error);
-      // Fallback to localStorage on permission error
-      const paymentStatus = localStorage.getItem(`payment_${currentUser.uid}`);
-      setIsPaid(paymentStatus === 'paid');
-      setLoading(false);
-    });
+    fetchProfile();
 
-    return unsubscribe;
-  }, [currentUser]);
+    const channel = supabase
+      .channel(`profile-${uid}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${uid}` },
+        (payload) => applyProfile(payload.new as ProfileRow)
+      )
+      .subscribe();
 
-  // Listen for payment success (when user returns from Stripe)
-  useEffect(() => {
-    const handlePaymentSuccess = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      if (urlParams.get('payment') === 'success' && currentUser) {
-        // Update Local State
-        setIsPaid(true);
-        
-        // Update LocalStorage
-        localStorage.setItem(`payment_${currentUser.uid}`, 'paid');
-        
-        // Update Firestore
-        try {
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(userDocRef, {
-            isPaid: true,
-            paymentDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          });
-        } catch (error) {
-          console.error("Error updating payment in Firestore:", error);
-          // If update fails (e.g. doc doesn't exist), try setDoc
-          const userDocRef = doc(db, 'users', currentUser.uid);
-          await setDoc(userDocRef, {
-            email: currentUser.email,
-            isPaid: true,
-            paymentDate: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }, { merge: true });
-        }
-
-        // Clean up URL
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+    return () => {
+      supabase.removeChannel(channel);
     };
+  }, [uid, fetchProfile, applyProfile]);
 
-    handlePaymentSuccess();
-  }, [currentUser]);
+  // Returning from Stripe with ?payment=success — never trust the URL to unlock anything.
+  // Only the Stripe webhook can mark someone paid; we just re-check for a short while.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('payment') !== 'success' || !uid) return;
+
+    params.delete('payment');
+    const query = params.toString();
+    window.history.replaceState({}, document.title, window.location.pathname + (query ? `?${query}` : ''));
+
+    let attempts = 0;
+    const timer = setInterval(async () => {
+      attempts += 1;
+      const paid = await fetchProfile();
+      if (paid || attempts >= 15) clearInterval(timer);
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [uid, fetchProfile]);
 
   const markFreeDownloadUsed = async () => {
     setHasUsedFreeDownload(true);
-    
-    if (currentUser) {
-      localStorage.setItem(`free_download_${currentUser.uid}`, 'used');
-      try {
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await updateDoc(userDocRef, {
-          hasUsedFreeDownload: true,
-          updatedAt: new Date().toISOString()
-        });
-      } catch (error) {
-        console.error("Error marking free download in Firestore:", error);
-        // Fallback to setDoc if update fails
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        await setDoc(userDocRef, {
-          hasUsedFreeDownload: true,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-      }
+    if (uid) {
+      const { error } = await supabase.rpc('mark_free_download_used');
+      if (error) console.error('Could not save free download usage:', error);
     } else {
       localStorage.setItem('anonymous_free_download', 'used');
     }

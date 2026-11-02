@@ -1,29 +1,17 @@
 // api/stripe-webhook.js — Vercel serverless function
-// Stripe calls this endpoint after a successful checkout.
-// It updates the user's Firestore doc to isPaid: true.
+// Stripe calls this after a successful checkout and it marks the user as paid
+// in Supabase (profiles.is_paid = true).
 //
-// Required environment variables (set in Vercel dashboard):
-//   STRIPE_WEBHOOK_SECRET        — from Stripe Dashboard > Webhooks > signing secret
-//   FIREBASE_PROJECT_ID          — your Firebase project ID
-//   FIREBASE_CLIENT_EMAIL        — service account email
-//   FIREBASE_PRIVATE_KEY         — service account private key (with \n escaped as \\n)
+// Required environment variables (Vercel → Settings → Environment Variables):
+//   STRIPE_WEBHOOK_SECRET  — Stripe Dashboard → Developers → Webhooks → signing secret (whsec_...)
+//   SUPABASE_URL           — or VITE_SUPABASE_URL (your https://xxxx.supabase.co URL)
+//   SUPABASE_SECRET_KEY    — Supabase → Project Settings → API Keys → secret key (sb_secret_...)
+//
+// Stripe webhook endpoint URL: https://reportdisputer.xyz/api/stripe-webhook
+// Event to send: checkout.session.completed
 
 import Stripe from 'stripe';
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
-
-// Initialize Firebase Admin once
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
-    }),
-  });
-}
-
-const db = getFirestore();
+import { getSupabaseAdmin } from './_supabaseAdmin.js';
 
 export const config = {
   api: {
@@ -35,7 +23,7 @@ export const config = {
 async function getRawBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('data', (chunk) => chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk));
     req.on('end', () => resolve(Buffer.concat(chunks)));
     req.on('error', reject);
   });
@@ -46,52 +34,68 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  const sig = req.headers['stripe-signature'];
+  if (!webhookSecret) {
+    console.error('STRIPE_WEBHOOK_SECRET is not set');
+    return res.status(500).json({ error: 'Webhook not configured' });
+  }
 
   let event;
   try {
     const rawBody = await getRawBody(req);
-    event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
+    // Signature check only needs the webhook secret — no Stripe API key required.
+    event = Stripe.webhooks.constructEvent(rawBody, req.headers['stripe-signature'], webhookSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook error: ${err.message}` });
   }
 
-  // Handle checkout completion
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const uid = session.client_reference_id; // set in redirectToPayment()
+    const userId = session.client_reference_id; // set in redirectToPayment()
 
-    if (!uid) {
-      console.warn('checkout.session.completed missing client_reference_id');
+    if (!userId) {
+      console.warn('checkout.session.completed missing client_reference_id', session.id);
       return res.status(200).json({ received: true });
     }
 
-    // Determine plan from amount_total (in cents)
-    // $9.99 = 999, $29.99 = 2999
+    if (session.payment_status && session.payment_status !== 'paid') {
+      console.log(`Session ${session.id} not paid yet (${session.payment_status}); skipping.`);
+      return res.status(200).json({ received: true });
+    }
+
+    // $9.99 = 999 cents (pro), $29.99 = 2999 cents (enterprise)
     const amount = session.amount_total ?? 0;
     const plan = amount >= 2999 ? 'enterprise' : 'pro';
 
     try {
-      await db.collection('users').doc(uid).set(
-        {
-          isPaid: true,
+      const supabase = getSupabaseAdmin();
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({
+          is_paid: true,
           plan,
-          paymentDate: new Date().toISOString(),
-          stripeSessionId: session.id,
-          stripeCustomerId: session.customer ?? null,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
-      console.log(`User ${uid} marked as paid — plan: ${plan}`);
+          payment_date: new Date().toISOString(),
+          stripe_session_id: session.id,
+          stripe_customer_id: typeof session.customer === 'string' ? session.customer : null,
+        })
+        .eq('id', userId)
+        .select('id');
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        // Don't return an error here — Stripe would keep retrying for days and could
+        // disable the endpoint. Log it so the payment can be matched up by hand.
+        console.error(`No profile found for user ${userId} (session ${session.id}) — check Stripe + Supabase manually`);
+        return res.status(200).json({ received: true, warning: 'user not found' });
+      }
+      console.log(`User ${userId} marked as paid — plan: ${plan}`);
     } catch (err) {
-      console.error(`Failed to update Firestore for user ${uid}:`, err);
+      console.error(`Failed to update Supabase for user ${userId}:`, err);
+      // 500 makes Stripe retry later, so a temporary outage doesn't lose the payment.
       return res.status(500).json({ error: 'Database update failed' });
     }
   }
 
-  res.status(200).json({ received: true });
+  return res.status(200).json({ received: true });
 }
