@@ -389,10 +389,13 @@ type FilterTab = 'all' | 'active' | 'urgent' | 'resolved';
 
 interface DisputeTrackerProps {
   autoAdd?: Omit<Dispute, 'id' | 'createdAt'>[];
+  /** Called once the auto-added disputes are saved, so they aren't saved again on the next visit. */
+  onAutoAdded?: () => void;
 }
 
-const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd }) => {
+const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd, onAutoAdded }) => {
   const { currentUser } = useAuth();
+  const uid = currentUser?.uid ?? null; // stable across token refreshes
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [filter, setFilter] = useState<FilterTab>('all');
   const [showAdd, setShowAdd] = useState(false);
@@ -407,7 +410,7 @@ const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd }) => {
 
   // Load this user's disputes from Supabase
   const loadDisputes = useCallback(async () => {
-    if (!currentUser) return;
+    if (!uid) return;
     const { data, error } = await supabase
       .from('disputes')
       .select('*')
@@ -418,47 +421,55 @@ const DisputeTracker: React.FC<DisputeTrackerProps> = ({ autoAdd }) => {
       setDisputes((data ?? []).map(fromRow));
     }
     setLoading(false);
-  }, [currentUser]);
+  }, [uid]);
 
   useEffect(() => {
-    if (!currentUser) { setDisputes([]); setLoading(false); return; }
+    if (!uid) { setDisputes([]); setLoading(false); return; }
     setLoading(true);
     loadDisputes();
-  }, [currentUser, loadDisputes]);
+  }, [uid, loadDisputes]);
 
   const addDispute = useCallback(async (data: Omit<Dispute, 'id' | 'createdAt'>) => {
-    if (!currentUser) return;
+    if (!uid) return;
     const { error } = await supabase.from('disputes').insert(toRow(data));
     if (error) console.error('Could not add dispute:', error);
     await loadDisputes();
-  }, [currentUser, loadDisputes]);
+  }, [uid, loadDisputes]);
 
-  // Auto-add disputes from letter generation
+  // Auto-add disputes from letter generation — one batch insert, then tell the parent to clear them.
   useEffect(() => {
-    if (!autoAdd?.length || !currentUser) return;
-    autoAdd.forEach(dispute => addDispute(dispute));
+    if (!autoAdd?.length || !uid) return;
+    (async () => {
+      const { error } = await supabase.from('disputes').insert(autoAdd.map(toRow));
+      if (error) {
+        console.error('Could not save generated disputes:', error);
+        return;
+      }
+      onAutoAdded?.();
+      await loadDisputes();
+    })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoAdd]);
+  }, [autoAdd, uid]);
 
   const updateStatus = useCallback(async (id: string, status: DisputeStatus) => {
-    if (!currentUser) return;
+    if (!uid) return;
     setDisputes(prev => prev.map(d => (d.id === id ? { ...d, status } : d)));
     const { error } = await supabase.from('disputes').update({ status }).eq('id', id);
     if (error) {
       console.error('Could not update dispute:', error);
       await loadDisputes();
     }
-  }, [currentUser, loadDisputes]);
+  }, [uid, loadDisputes]);
 
   const deleteDispute = useCallback(async (id: string) => {
-    if (!currentUser) return;
+    if (!uid) return;
     setDisputes(prev => prev.filter(d => d.id !== id));
     const { error } = await supabase.from('disputes').delete().eq('id', id);
     if (error) {
       console.error('Could not delete dispute:', error);
       await loadDisputes();
     }
-  }, [currentUser, loadDisputes]);
+  }, [uid, loadDisputes]);
 
   // Stats
   const active   = disputes.filter(d => d.status === 'pending' || d.status === 'responded');

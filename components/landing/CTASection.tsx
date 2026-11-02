@@ -6,7 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const CTASection = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, openAuth } = useAuth();
   return (
     <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-5 pointer-events-none"
@@ -42,7 +42,7 @@ const CTASection = () => {
             <Button
               size="lg"
               className="bg-primary text-primary-foreground hover:bg-primary/90 gap-2 text-base px-8"
-              onClick={() => navigate(currentUser ? '/app' : '/app?auth=true')}
+              onClick={() => { navigate('/app'); if (!currentUser) openAuth('signup'); }}
             >
               Start Free Analysis
               <ArrowRight className="w-5 h-5" />

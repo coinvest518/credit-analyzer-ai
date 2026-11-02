@@ -6,7 +6,7 @@
 -- tables to the Data API automatically, so each role gets exactly what it needs.
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 1. profiles — one row per user (replaces Firestore users/{uid})
+-- 1. profiles — one row per user (paid status, free-download flag)
 -- ─────────────────────────────────────────────────────────────────────────────
 create table if not exists public.profiles (
   id                      uuid primary key references auth.users (id) on delete cascade,
@@ -120,7 +120,7 @@ from auth.users u
 on conflict (id) do nothing;
 
 -- ─────────────────────────────────────────────────────────────────────────────
--- 2. disputes — the dispute tracker (replaces Firestore users/{uid}/disputes)
+-- 2. disputes — the dispute tracker
 -- ─────────────────────────────────────────────────────────────────────────────
 create table if not exists public.disputes (
   id             uuid primary key default gen_random_uuid(),

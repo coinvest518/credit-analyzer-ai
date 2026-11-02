@@ -7,7 +7,8 @@ import { useAuth } from "../../contexts/AuthContext";
 
 const Navbar = () => {
   const navigate = useNavigate();
-  const { currentUser, signOutUser } = useAuth();
+  const { currentUser, signOutUser, openAuth } = useAuth();
+  const startAuth = (view: 'signin' | 'signup') => { navigate('/app'); openAuth(view); };
   const [menuOpen, setMenuOpen] = useState(false);
 
   const initials = currentUser
@@ -89,10 +90,10 @@ const Navbar = () => {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => navigate('/app?auth=true')}>
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex" onClick={() => startAuth('signin')}>
                 Log In
               </Button>
-              <Button size="sm" onClick={() => navigate('/app?auth=true')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              <Button size="sm" onClick={() => startAuth('signup')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Get Started
               </Button>
             </>
@@ -154,10 +155,10 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                <Button variant="outline" size="sm" className="w-full" onClick={() => { navigate('/app?auth=true'); setMenuOpen(false); }}>
+                <Button variant="outline" size="sm" className="w-full" onClick={() => { startAuth('signin'); setMenuOpen(false); }}>
                   Log In
                 </Button>
-                <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => { navigate('/app?auth=true'); setMenuOpen(false); }}>
+                <Button size="sm" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" onClick={() => { startAuth('signup'); setMenuOpen(false); }}>
                   Get Started
                 </Button>
               </div>

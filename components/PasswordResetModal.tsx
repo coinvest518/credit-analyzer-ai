@@ -41,7 +41,7 @@ export const PasswordResetModal: React.FC<PasswordResetModalProps> = ({ isOpen, 
   };
 
   const inputClass =
-    'w-full px-3 py-3 sm:px-4 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 text-sm sm:text-base';
+    'w-full px-3 py-3 sm:px-4 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-cyan-500 text-base';
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60] p-4">

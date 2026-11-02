@@ -7,7 +7,7 @@ An intelligent credit repair application that uses AI to analyze credit reports,
 - 🤖 **AI-Powered Analysis**: Uses Mistral AI to analyze credit documents
 - 🔍 **Violation Detection**: Identifies FCRA, FDCPA, and other legal violations
 - 📝 **Automated Letter Generation**: Creates professional dispute letters
-- 🔐 **Supabase Authentication**: Email/password and Google sign-in
+- 🔐 **Supabase Authentication**: Email/password sign-up with email confirmation (Google sign-in can be switched on later)
 - 💳 **Stripe Payment Integration**: Premium subscription model
 - 📊 **Progress Tracking**: Step-by-step workflow management
 
@@ -57,8 +57,12 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_publishable_key
 1. Create a free project at [supabase.com](https://supabase.com/dashboard)
 2. SQL Editor → paste all of `supabase/schema.sql` → Run (creates `profiles` + `disputes` with row-level security)
 3. Authentication → URL Configuration: Site URL `https://reportdisputer.xyz`, add redirect URLs `https://reportdisputer.xyz/**`, `https://*-coinvest518s-projects.vercel.app/**`, `http://localhost:3000/**`
-4. (Optional) Authentication → Sign In / Providers → Google: paste a Google OAuth client ID + secret. In Google Cloud the authorized redirect URI is `https://<your-project>.supabase.co/auth/v1/callback`
-5. Project Settings → API Keys: copy the URL, publishable key and secret key into Vercel env vars (see above)
+4. **Email sending (required for real users):** Supabase's built-in email only sends ~2 emails/hour and only to your own team. Go to Authentication → Emails → SMTP Settings and turn on custom SMTP with Resend: host `smtp.resend.com`, port `465`, username `resend`, password = your Resend API key, sender = an address on your verified Resend domain.
+5. **Email templates (after SMTP is on):** Authentication → Emails → Templates. So links work in phone mail apps and on any device, change the link in
+   - *Confirm signup* to `{{ .SiteURL }}/app?token_hash={{ .TokenHash }}&type=email&auth_flow=signup`
+   - *Reset password* to `{{ .SiteURL }}/app?token_hash={{ .TokenHash }}&type=recovery&auth_flow=recovery`
+6. (Later) Google sign-in: Authentication → Sign In / Providers → Google (client ID + secret; Google redirect URI `https://<your-project>.supabase.co/auth/v1/callback`), then set `VITE_ENABLE_GOOGLE_AUTH=true` in Vercel and redeploy.
+7. Project Settings → API Keys: copy the URL, publishable key and secret key into Vercel env vars (see above)
 
 ### 5. Mistral AI Setup
 1. Get API key from [Mistral AI Console](https://console.mistral.ai)
@@ -77,7 +81,7 @@ npm run dev
 ## User Flow
 
 1. **Free Access**: Users can explore steps 1-2 without signing in
-2. **Authentication**: Required for step 3+ (email/password or Google, via Supabase)
+2. **Authentication**: Required for step 3+ — sign up with email + password → confirm via the emailed link → signed in
 3. **Payment**: Premium subscription required for AI analysis
 4. **Full Access**: Complete credit repair workflow
 
@@ -126,7 +130,7 @@ Enable3 validates requests based on the **server IP address**, not the domain. Y
 3. **Add API key to `.env.local`:**
 
 ```env
-TRUEPLAY_API_KEY=7f2fe04d-cdf8-4b96-9fa0-c14c0bb1e4ef
+TRUEPLAY_API_KEY=your_trueplay_api_key
 ```
 
 4. **Start both servers:**

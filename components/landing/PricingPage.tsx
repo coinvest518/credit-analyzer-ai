@@ -9,7 +9,7 @@ import { usePayment } from "../../contexts/PaymentContext";
 
 const PricingPage = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, openAuth } = useAuth();
   const { redirectToPayment, isPaid, userPlan } = usePayment();
 
   const handleTierClick = (tierName: string) => {
@@ -19,7 +19,7 @@ const PricingPage = () => {
     }
 
     if (!currentUser) {
-      navigate('/app?auth=true');
+      openAuth('signup', { notice: { tone: 'info', text: 'Create a free account first — then you can upgrade.' } });
       return;
     }
 

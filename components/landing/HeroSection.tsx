@@ -7,8 +7,8 @@ import CreditScoreGauge from "./CreditScoreGauge";
 
 const HeroSection = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
-  const goToApp = () => navigate(currentUser ? '/app' : '/app?auth=true');
+  const { currentUser, openAuth } = useAuth();
+  const goToApp = () => { navigate('/app'); if (!currentUser) openAuth('signup'); };
   return (
     <section className="relative min-h-screen bg-hero-gradient overflow-hidden pt-24 flex items-center">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">

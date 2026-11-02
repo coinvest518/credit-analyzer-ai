@@ -4,7 +4,6 @@ import { Mistral } from "@mistralai/mistralai";
 import { Header } from './components/Header';
 import { WorkflowStepper } from './components/WorkflowStepper';
 import { StepDetail } from './components/StepDetail';
-import { AuthModal } from './components/AuthModal';
 import { PaymentModal } from './components/PaymentModal';
 import { ProcessingModal } from './components/ProcessingModal';
 import { Footer } from './components/Footer';
@@ -20,11 +19,10 @@ import type { UploadedFile, AnalysisResult, ProcessingTask, LetterPackage, Track
 
 const App: React.FC = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, openAuth } = useAuth();
   const { isPaid, canDownload, markFreeDownloadUsed } = usePayment();
   const [activeStep, setActiveStep] = useState(1);
   const [completedStep, setCompletedStep] = useState(0);
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showBlogAdmin, setShowBlogAdmin] = useState(false);
 
@@ -51,15 +49,6 @@ const App: React.FC = () => {
   const [processingTasks, setProcessingTasks] = useState<ProcessingTask[]>([]);
   const [currentTaskIndex, setCurrentTaskIndex] = useState(0);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('auth') === 'true' && !currentUser) {
-      setShowAuthModal(true);
-      // Clean up URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-    }
-  }, [currentUser]);
-
   const activeStepData = workflowSteps.find(step => step.id === activeStep);
 
   const handleStepClick = (stepId: number) => {
@@ -81,7 +70,7 @@ const App: React.FC = () => {
 
   const handleDownloadAttempt = () => {
     if (!currentUser) {
-      setShowAuthModal(true);
+      openAuth('signin');
       return false;
     }
     if (!canDownload) {
@@ -100,7 +89,7 @@ const App: React.FC = () => {
         // Block moving from Step 3 to Step 4 if not authenticated or not paid
         if (activeStep === 3) {
           if (!currentUser) {
-            setShowAuthModal(true);
+            openAuth('signin');
             return;
           }
           if (!canDownload) {
@@ -436,7 +425,7 @@ Return ONLY valid JSON with complete, professional letters.`;
     <>
         <div className="min-h-screen bg-gray-900 text-white">
         <Header 
-          onSignInClick={() => setShowAuthModal(true)}
+          onSignInClick={() => openAuth('signin')}
           onUpgradeClick={() => navigate('/pricing')}
           onBlogClick={() => navigate('/blog')}
         />
@@ -460,7 +449,7 @@ Return ONLY valid JSON with complete, professional letters.`;
               {/* Step 6 — Dispute Tracker (shown alongside StepDetail) */}
               {activeStep === 6 && (
                 <div className="mb-6">
-                  <DisputeTracker autoAdd={autoDisputes} />
+                  <DisputeTracker autoAdd={autoDisputes} onAutoAdded={() => setAutoDisputes([])} />
                 </div>
               )}
 
@@ -494,10 +483,6 @@ Return ONLY valid JSON with complete, professional letters.`;
             </div>
           </div>
         </main>
-        <AuthModal 
-          isOpen={showAuthModal} 
-          onClose={() => setShowAuthModal(false)} 
-        />
         <PaymentModal 
           isOpen={showPaymentModal} 
           onClose={() => setShowPaymentModal(false)} 

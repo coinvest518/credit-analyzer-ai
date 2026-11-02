@@ -6,6 +6,7 @@ import BlogPage from './components/landing/BlogPage';
 import TermsOfService from './components/landing/TermsOfService';
 import PrivacyPolicy from './components/landing/PrivacyPolicy';
 import App from './App';
+import { AuthModal } from './components/AuthModal';
 
 const AppRouter: React.FC = () => {
   return (
@@ -19,6 +20,7 @@ const AppRouter: React.FC = () => {
         <Route path="/app" element={<App />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <AuthModal />
     </BrowserRouter>
   );
 };
