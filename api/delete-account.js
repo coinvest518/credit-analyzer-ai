@@ -25,6 +25,10 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Your session expired. Please sign in again.' });
     }
 
+    // Deleting a user doesn't kill tokens that are already issued, so end every session first.
+    const { error: signOutError } = await supabase.auth.admin.signOut(token, 'global');
+    if (signOutError) console.warn('Could not revoke sessions before delete:', signOutError.message);
+
     const { error: deleteError } = await supabase.auth.admin.deleteUser(userData.user.id);
     if (deleteError) throw deleteError;
 

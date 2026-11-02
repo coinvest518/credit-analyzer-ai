@@ -1,6 +1,9 @@
 -- ReportDisputer / credit-analyzer-ai — Supabase database setup
 -- Paste this whole file into Supabase Dashboard → SQL Editor → Run.
 -- Safe to run more than once.
+--
+-- Grants are explicit on purpose: new Supabase projects no longer expose
+-- tables to the Data API automatically, so each role gets exactly what it needs.
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 1. profiles — one row per user (replaces Firestore users/{uid})
@@ -42,6 +45,8 @@ revoke all on public.profiles from anon;
 revoke insert, update, delete on public.profiles from authenticated;
 grant select on public.profiles to authenticated;
 grant update (display_name) on public.profiles to authenticated;
+-- Server-side code (Stripe webhook, delete-account) uses the secret key = service_role.
+grant select, insert, update, delete on public.profiles to service_role;
 
 -- Create a profile automatically whenever someone signs up (email or Google).
 create or replace function public.handle_new_user()
@@ -63,6 +68,8 @@ begin
 end;
 $$;
 
+revoke all on function public.handle_new_user() from public, anon, authenticated;
+
 drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
@@ -79,6 +86,8 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.touch_updated_at() from public, anon, authenticated;
 
 drop trigger if exists profiles_touch_updated_at on public.profiles;
 create trigger profiles_touch_updated_at
@@ -141,6 +150,7 @@ create policy "Users manage their own disputes"
 
 revoke all on public.disputes from anon;
 grant select, insert, update, delete on public.disputes to authenticated;
+grant select, insert, update, delete on public.disputes to service_role;
 
 -- ─────────────────────────────────────────────────────────────────────────────
 -- 3. Live updates (so "Premium" shows up the moment Stripe confirms payment)

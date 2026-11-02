@@ -178,7 +178,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             const body = await res.json().catch(() => ({}));
             throw new Error(body.error || 'Could not delete your account. Please try again.');
         }
-        await supabase.auth.signOut();
+        // The server already ended every session; just clear this browser's copy.
+        await supabase.auth.signOut({ scope: 'local' });
         setCurrentUser(null);
     }, []);
 
